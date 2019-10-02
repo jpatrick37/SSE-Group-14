@@ -1,57 +1,158 @@
 import React, { Component } from 'react';
+import Avatar from '@material-ui/core/Avatar';
+import Button from '@material-ui/core/Button';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import TextField from '@material-ui/core/TextField';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+import Link from '@material-ui/core/Link';
+import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
+import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/core/styles';
+import Container from '@material-ui/core/Container';
+
 import { firebase } from '../Firebase.jsx';
 
 class Login extends Component {
   _isMounted = false;
   constructor(props) {
     super(props);
+    this.login = this.login.bind(this);
+    this.handleChange = this.handleChange.bind(this);
     this.state = {
-      data: [],
+      email: '',
+      password: ''
     };
-    this.testsRef = firebase.firestore().collection('tests');
   }
 
-  onCollectionUpdate = (querySnapshot) => {
-    const data = [];
-    querySnapshot.forEach((doc) => {
-      var { 
-        apple,
-        name,
-      } = doc.data();
-      data.push({
-          key: doc.id,
-          doc, // DocumentSnapshot
-          apple,
-          name,
-      });
+  handleChange(e) {
+    this.setState({ [e.target.name]: e.target.value });
+  }
+
+  login(e) {
+    e.preventDefault();
+    firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password)
+    .then(firebaseUser => {
+      console.log("Signed in!");
+    })
+    .catch(error => {
+      console.log("Didn't sign in!");
     });
-    if (this._isMounted) {
-      this.setState({ data });
-    }
   }
 
   componentDidMount() {
     this._isMounted = true;
-    this.unsubscribe = this.testsRef.onSnapshot(this.onCollectionUpdate);
   }
 
   componentWillUnmount() {
     this._isMounted = false;
   }
 
-  render() {
-    var firebasedata = [];
-    for (var i=0; i<this.state.data.length; i++) {
-      firebasedata.push(
-        <p key={i}>
-          {this.state.data[i].apple} {this.state.data[i].name}
-        </p>
-      );
-    }
+  
+  Copyright() {
     return (
-      <div className="App">
-          <input></input>
-          <input></input>
+      <Typography variant="body2" color="textSecondary" align="center">
+        {'Copyright © '}
+        <Link color="inherit" href="https://material-ui.com/">
+          Your Website
+        </Link>{' '}
+        {new Date().getFullYear()}
+        {'.'}
+      </Typography>
+    );
+  }
+
+  render() {
+    const classes = makeStyles(theme => ({
+      '@global': {
+        body: {
+          backgroundColor: theme.palette.common.white,
+        },
+      },
+      paper: {
+        marginTop: theme.spacing(8),
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      },
+      avatar: {
+        margin: theme.spacing(1),
+        backgroundColor: theme.palette.secondary.main,
+      },
+      form: {
+        width: '100%', // Fix IE 11 issue.
+        marginTop: theme.spacing(1),
+      },
+      submit: {
+        margin: theme.spacing(3, 0, 2),
+      },
+    }));
+
+    return (
+      <div className="container">
+        <Container component="main" maxWidth="xs">
+          <CssBaseline />
+          <div className={classes.paper}>
+            <Avatar className={classes.avatar}>
+              <LockOutlinedIcon />
+            </Avatar>
+            <Typography component="h1" variant="h5">
+              Sign in
+            </Typography>
+            <form className={classes.form} noValidate>
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                autoFocus
+                onChange={this.handleChange}
+              />
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                onChange={this.handleChange}
+              />
+              <FormControlLabel
+                control={<Checkbox value="remember" color="primary" />}
+                label="Remember me"
+              />
+              <Button
+                // type="submit"
+                fullWidth
+                variant="contained"
+                color="primary"
+                // className={classes.submit}
+                onClick={this.login}
+              >
+                Sign In
+              </Button>
+              <Grid container>
+                <Grid item xs>
+                  <Link href="#" variant="body2">
+                    Forgot password?
+                  </Link>
+                </Grid>
+              </Grid>
+            </form>
+          </div>
+          <Box mt={8}>
+            <this.Copyright />
+          </Box>
+        </Container>
       </div>
     );
   }

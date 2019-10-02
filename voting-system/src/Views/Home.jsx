@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Link } from "react-router-dom";
+import { firebase } from '../Firebase.jsx';
+import { Button } from "react-bootstrap";
 
 class Home extends Component {
   _isMounted = false;
@@ -8,6 +9,10 @@ class Home extends Component {
     this.state = {
       data: [],
     };
+  }
+
+  logout = () => {
+    firebase.auth().signOut();
   }
 
   componentDidMount() {
@@ -21,10 +26,8 @@ class Home extends Component {
   render() {
     return (
       <div className="App">
-            <h1>HOME</h1>
-            <Link to='/login'>
-                Login
-            </Link>
+        <h1>HOME</h1>
+        <Button onClick={this.logout}>Log Out</Button>
       </div>
     );
   }
