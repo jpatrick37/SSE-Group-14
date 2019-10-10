@@ -23,10 +23,15 @@ class Home extends Component {
     this._isMounted = false;
   }
 
+  gotoVote = () => {
+    this.props.history.push("/vote");
+  }
+
   render() {
     return (
       <div className="App">
         <h1>HOME</h1>
+        <Button onClick={this.gotoVote}>Vote</Button>
         <Button onClick={this.logout}>Log Out</Button>
       </div>
     );

@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Route, Redirect, Switch } from "react-router-dom";
+import { Container, Row } from "react-bootstrap";
+
 import './App.css';
 import Login from './Views/Login.jsx';
 import Home from './Views/Home.jsx';
+import RouteObjects from './routes.js';
 
 import { firebase } from './Firebase.jsx';
 
@@ -49,6 +52,18 @@ class App extends Component {
     });
   }
 
+  getRoutes = routes => {
+    return routes.map((route, key) => {
+      return (
+        <Route
+          path={route.path}
+          render={props => (<route.component {...props}/>)}
+          key={key}
+        />
+      );
+    });
+  };
+
   render() {
     // Router logic
     var renderPath = "";
@@ -72,12 +87,17 @@ class App extends Component {
     // Rendering
     return (
       <div className="App">
-        <Router>
-          <Switch>
-            <Route path={renderPath} render={props => <RenderPage {...props} handleClick={ this.handleNotificationClick}/>} />
-            <Redirect from="/" to={redirectPath} />
-          </Switch>
-        </Router>   
+        <Container fluid >
+          <Row>
+            <Router>
+              <Switch>
+                { this.getRoutes(RouteObjects) }
+                <Route path={renderPath} render={props => <RenderPage {...props} />} />
+                <Redirect from="/" to={redirectPath} />
+              </Switch>
+            </Router>
+          </Row>
+        </Container>
       </div>
     );
   }
