@@ -91,7 +91,7 @@ class App extends Component {
           <Row>
             <Router>
               <Switch>
-                { this.getRoutes(RouteObjects) }
+                { this.state.user && this.getRoutes(RouteObjects) }
                 <Route path={renderPath} render={props => <RenderPage {...props} />} />
                 <Redirect from="/" to={redirectPath} />
               </Switch>
