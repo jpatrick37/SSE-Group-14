@@ -1,29 +1,88 @@
 import React, { Component } from 'react';
-// import { firebase } from '../Firebase.jsx';
+import { Container, Row, Col, FormGroup, FormLabel, FormControl } from 'react-bootstrap';
+import { firebase } from '../Firebase.jsx';
 
 class Vote extends Component {
   _isMounted = false;
   constructor(props) {
     super(props);
     this.state = {
+      parties: {},
+      candidates: [],
       data: [],
     };
+    this.candidatesRef = firebase.firestore().collection('candidates');
+  }
+
+  onCandidatesCollectionUpdate = (querySnapshot) => {
+    // Variables
+    var candidates = [];
+    var parties = {};
+    // Fetching
+    querySnapshot.forEach(doc => {
+      // Pushing to variables
+      var candidate = doc.data();
+      candidate.id = doc.id;
+      candidates.push(candidate);
+      parties[candidate.PARTY] = 0;
+    });
+    // Storing in React State
+    if (this._isMounted) {
+      this.setState({ candidates, parties });
+    }
   }
 
   componentDidMount() {
     this._isMounted = true;
+    this.unsubscribe = this.candidatesRef.onSnapshot(this.onCandidatesCollectionUpdate);
   }
 
   componentWillUnmount() {
     this._isMounted = false;
   }
 
+  setUpPartiesInput = (parties) => {
+    var inputs = Object.keys(parties).map(function (key) {
+      var inputOptions = [];
+      for (var i=1; i<=Object.keys(parties).length; i++) {
+        inputOptions.push(
+          <option value={i} key={key+"-option-"+i}>{i}</option>
+        );
+      }
+      return (
+        <Col key={key+"-formgroup"}>
+          <FormGroup>
+            <FormLabel>{key}</FormLabel>
+            <FormControl as="select">
+              {inputOptions}
+            </FormControl>
+          </FormGroup>
+        </Col>
+      );
+    });
+    return inputs;
+  }
+
   render() {
+    // console.log(this.state.candidates, this.state.parties);
     return (
       <div className="App">
-        <h1>Voting</h1>
-        <hr />
-        <p>Vote for something</p>
+        <Container>
+          <Row>
+            <Col>
+              <h1>Voting</h1>
+              <hr />
+            </Col>
+          </Row>
+          <Row>
+            <form>
+              {/* Generating parties input */}
+              <Row>
+                {this.setUpPartiesInput(this.state.parties)}
+              </Row>
+            </form>
+          </Row>
+        </Container>
       </div>
     );
   }
