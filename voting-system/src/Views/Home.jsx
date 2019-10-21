@@ -27,12 +27,17 @@ class Home extends Component {
     this.props.history.push("/vote");
   }
 
+  gotoSetup = () => {
+    this.props.history.push("/setup");
+  }
+
   render() {
     return (
       <div className="App">
         <h1>HOME</h1>
         <Button onClick={this.gotoVote}>Vote</Button>
         <Button onClick={this.logout}>Log Out</Button>
+        <Button onClick={this.gotoSetup}>Setup</Button>
       </div>
     );
   }

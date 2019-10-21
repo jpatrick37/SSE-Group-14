@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Row, Col, FormGroup, FormLabel, FormControl } from 'react-bootstrap';
+import { Container, Row, Col, FormGroup, FormLabel, FormControl, Button } from 'react-bootstrap';
 import { firebase } from '../Firebase.jsx';
 
 class Vote extends Component {
@@ -10,6 +10,7 @@ class Vote extends Component {
       parties: {},
       candidates: [],
       data: [],
+      vote: {},
     };
     this.candidatesRef = firebase.firestore().collection('candidates');
   }
@@ -24,12 +25,32 @@ class Vote extends Component {
       var candidate = doc.data();
       candidate.id = doc.id;
       candidates.push(candidate);
-      parties[candidate.PARTY] = 0;
+      if (Array.isArray(parties[candidate.PARTY])) {
+        parties[candidate.PARTY].push(candidate);
+      } else {
+        parties[candidate.PARTY] = [candidate];
+      }
     });
     // Storing in React State
     if (this._isMounted) {
-      this.setState({ candidates, parties });
+      var vote = this.setupVoteObject(parties);
+      this.setState({ candidates, parties, vote });
     }
+  }
+
+  setupVoteObject = (parties) => {
+    var vote = { parties: {}, candidates: {} };
+    var partyKeys = Object.keys(parties);
+    for (var i=0; i<partyKeys.length; i++) {
+      var key = partyKeys[i];
+      var partyKey = partyKeys[i].toLowerCase().replace(/\s/g,'-');
+      vote.parties[partyKey] = "-";
+      for (var j=0; j<parties[key].length; j++) {
+        var candidateKey = (parties[key][j].SURNAME+'-'+parties[key][j].GIVEN_NAMES).toLowerCase();
+        vote.candidates[candidateKey] = "-";
+      }
+    }
+    return vote;
   }
 
   componentDidMount() {
@@ -41,19 +62,32 @@ class Vote extends Component {
     this._isMounted = false;
   }
 
-  setUpPartiesInput = (parties) => {
+  handleVoteFormChange = (event) => {
+    var { vote } = this.state;
+    var { id, value } = event.target;
+    if (id.indexOf("party") !== -1) {
+      vote.parties[id] = value;
+    } else {
+      vote.candidates[id] = value;
+    }
+    this.setState({ vote });
+    // console.log(event.target.id, event.target.value);
+  }
+
+  setupPartiesInput = (parties) => {
     var inputs = Object.keys(parties).map(function (key) {
-      var inputOptions = [];
+      var uniqueKey = key.replace(/\s/g,'-').toLowerCase();
+      var inputOptions = [<option key={uniqueKey+"--"}>-</option>];
       for (var i=1; i<=Object.keys(parties).length; i++) {
         inputOptions.push(
-          <option value={i} key={key+"-option-"+i}>{i}</option>
+          <option value={i} key={uniqueKey+"-option-"+i}>{i}</option>
         );
       }
       return (
-        <Col key={key+"-formgroup"}>
+        <Col key={uniqueKey+"-formgroup"}>
           <FormGroup>
             <FormLabel>{key}</FormLabel>
-            <FormControl as="select">
+            <FormControl as="select" id={uniqueKey}>
               {inputOptions}
             </FormControl>
           </FormGroup>
@@ -63,11 +97,55 @@ class Vote extends Component {
     return inputs;
   }
 
+  setupCandidatesInput = (candidates, parties) => {
+    var inputs = Object.keys(parties).map(function (key) {
+      var candidatesInputs = [];
+      for (var i=0; i<parties[key].length; i++) {
+        // Unique Key
+        var uniqueKey = (parties[key][i].SURNAME+"-"+parties[key][i].GIVEN_NAMES).toLowerCase();
+        // Setting up options
+        var inputOptions = [<option key={uniqueKey+"--"}>-</option>];
+        for (var j=0; j<candidates.length; j++) {
+          inputOptions.push(
+            <option value={j} key={uniqueKey+"-option-"+j}>{j}</option>
+          );
+        }
+        // Setting up candidates voting
+        candidatesInputs.push(
+          <Row key={uniqueKey+"-formgroup"}>
+            <FormGroup>
+              <FormLabel>{parties[key][i].SURNAME+" "+parties[key][i].GIVEN_NAMES}</FormLabel>
+              <FormControl as="select" id={uniqueKey}>
+                {inputOptions}
+              </FormControl>
+            </FormGroup>
+          </Row>
+        );
+      }
+      // Returning
+      return (
+        <Col key={key.replace(/\s/g,'-').toLowerCase()+"-candidates-cols"}>
+          {candidatesInputs}
+        </Col>
+      );
+    });
+    return inputs;
+  }
+
+  checkVote = (vote) => {
+    
+  }
+
+  handleVoteSubmit = (e) => {
+    e.preventDefault();
+    console.log(this.state.vote);
+  }
+
   render() {
-    // console.log(this.state.candidates, this.state.parties);
+    // console.log(this.state.candidates, this.state.parties, this.state.vote);
     return (
       <div className="App">
-        <Container>
+        <Container fluid>
           <Row>
             <Col>
               <h1>Voting</h1>
@@ -75,10 +153,17 @@ class Vote extends Component {
             </Col>
           </Row>
           <Row>
-            <form>
+            <form onChange={this.handleVoteFormChange} onSubmit={this.handleVoteSubmit}>
               {/* Generating parties input */}
               <Row>
-                {this.setUpPartiesInput(this.state.parties)}
+                {this.setupPartiesInput(this.state.parties)}
+              </Row>
+              <hr />
+              <Row>
+                {this.setupCandidatesInput(this.state.candidates, this.state.parties)}
+              </Row>
+              <Row>
+                <Button variant="success" type="submit" block>Submit Vote</Button>
               </Row>
             </form>
           </Row>
