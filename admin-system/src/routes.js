@@ -2,8 +2,18 @@
 import Candidates from "./Views/Candidates";
 import Election from "./Views/Election";
 import Settings from "./Views/Settings"
+import UploadCandidates from "./Views/UploadCandidates"
+import CandidatesList from "./Views/CandidatesList"
 
 const RouteObjects = [
+    {
+        path: "/candidates/update",
+        component: UploadCandidates
+    },
+    {
+        path: "/candidates/list",
+        component: CandidatesList
+    },
     {
         path: "/candidates",
         component: Candidates

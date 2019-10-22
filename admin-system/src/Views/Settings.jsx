@@ -36,21 +36,6 @@ class Settings extends Component {
               <Button >Generate new password</Button> 
             </Grid.Column>
           </Grid.Row>
-        
-        {/*        this is how to add another column 
-          <Grid.Row>
-            <Grid.Column>
-              <Image src='https://react.semantic-ui.com/images/wireframe/media-paragraph.png' />
-            </Grid.Column>
-            <Grid.Column>
-              <Image src='https://react.semantic-ui.com/images/wireframe/media-paragraph.png' />
-            </Grid.Column>
-            <Grid.Column>
-              <Image src='https://react.semantic-ui.com/images/wireframe/media-paragraph.png' />
-            </Grid.Column>
-          </Grid.Row> 
-        */}
-
         </Grid>
       </div>
     )
