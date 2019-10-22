@@ -1,37 +1,39 @@
 import React, { Component } from 'react';
-import { firebase } from '../Firebase.jsx';
 import NavBar from './NavBar.jsx';
+import { IoIosToday } from 'react-icons/io'
+import { Grid, Button } from 'semantic-ui-react'
 
 
-class Home extends Component {
-  
+
+class Election extends Component {
   constructor(props) {
     super(props);
-    this.state = ({ activeItem: 'home',
-                    mountedComponent: null
+    this.state = ({ 
     })
   }
 
-  handleItemClick = (e, { name }) => this.setState({ activeItem: name })
-  
-  logout = () => {
-    firebase.auth().signOut();
-  }
 
-
-  gotoSetup = () => {
-    this.props.history.push("/setup");
+  gotoViewElection = () => {
+    this.props.history.push("/election/paper");
   }
 
   render() {
     return (
       <div style= {{width: "100%"}}>
         <NavBar {...this.props} activeItem='election' />
-        <p> i am a election</p>
+        <Grid style={{marginLeft: "10px"}} columns={1} >
+          <Grid.Row>
+            <Grid.Column>
+              <IoIosToday size="10em"/>
+              <br/>
+              <Button onClick={this.gotoViewElection} >View Election Paper</Button> 
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
       </div>
     )
   }
 }
 
 
-export default Home;
+export default Election;

@@ -1,6 +1,7 @@
 
 import Candidates from "./Views/Candidates";
 import Election from "./Views/Election";
+import ElectionPaper from "./Views/ElectionPaper";
 import Settings from "./Views/Settings"
 import UploadCandidates from "./Views/UploadCandidates"
 import CandidatesList from "./Views/CandidatesList"
@@ -17,6 +18,10 @@ const RouteObjects = [
     {
         path: "/candidates",
         component: Candidates
+    },
+    {
+        path: "/election/paper",
+        component: ElectionPaper
     },
     {
         path: "/election",
