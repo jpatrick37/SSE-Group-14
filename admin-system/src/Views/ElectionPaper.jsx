@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import NavBar from './NavBar.jsx';
 // import { Button } from 'semantic-ui-react'
-import { Container, Row, Col, FormGroup, FormLabel, FormControl, Button } from 'react-bootstrap';
+import { Container, Row, Col, FormGroup, FormLabel, FormControl } from 'react-bootstrap';
 import { firebase } from '../Firebase.jsx';
 
 

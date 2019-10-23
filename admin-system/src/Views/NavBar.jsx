@@ -44,7 +44,7 @@ class NavBar extends Component {
 
     return (
       <div>
-        <Menu secondary big>
+        <Menu secondary big="true">
           <Menu.Item
             name='home'
             active={activeItem === 'home'}

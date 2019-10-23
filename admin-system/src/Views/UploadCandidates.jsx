@@ -15,9 +15,8 @@ import IconButton from '@material-ui/core/IconButton';
 import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import WarningIcon from '@material-ui/icons/Warning';
-import { Header, Modal } from 'semantic-ui-react'
+import { Header } from 'semantic-ui-react'
 import NavBar from "./NavBar"
-import Popup from "reactjs-popup";
 
 
 const variantIcon = {

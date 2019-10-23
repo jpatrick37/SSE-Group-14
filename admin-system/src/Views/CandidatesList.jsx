@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { firebase } from '../Firebase.jsx';
-import { Header, Card, Feed } from 'semantic-ui-react'
+import { Header, Card } from 'semantic-ui-react'
 import ReactLoading from 'react-loading';
 import NavBar from "./NavBar"
 import '../css/candidatesListCard.css'
