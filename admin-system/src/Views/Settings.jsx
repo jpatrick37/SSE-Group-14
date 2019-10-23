@@ -1,39 +1,33 @@
 import React, { Component } from 'react';
 import NavBar from './NavBar.jsx';
 import { Grid } from 'semantic-ui-react'
-import { IoIosPersonAdd, IoMdWarning, IoIosKey } from 'react-icons/io'
+import { IoIosPersonAdd } from 'react-icons/io'
 import { Button } from 'semantic-ui-react'
 
-
+// displays some settings the admin can do
 class Settings extends Component {
   
-  constructor(props) {
-    super(props);
-    this.state = ({
-    })
+
+
+  // loads the elctions date period
+  gotToUserDetails = () => {
+    this.props.history.push("/settings/user");
   }
 
   render() {
 
     return (
       <div style= {{width: "100%"}}>
+        {/* nav bar */}
         <NavBar {...this.props} activeItem='settings' />
-        <Grid style={{marginLeft: "10px"}} doubling columns={3} >
+        
+        {/* grid of optinoos for the admin */}
+        <Grid style={{marginLeft: "10px"}} doubling columns={1} >
           <Grid.Row>
             <Grid.Column>
-              <IoIosPersonAdd color="red" size="10em"/>
+              <IoIosPersonAdd size="10em"/>
               <br/>
-              <Button color="red" >Add New Admin</Button> 
-            </Grid.Column>
-            <Grid.Column>
-              <IoMdWarning color="red" size="10em"/>
-              <br/>
-              <Button color="red" >Delete This Account</Button> 
-            </Grid.Column>
-            <Grid.Column>
-              <IoIosKey size="10em"/>
-              <br/>
-              <Button >Generate new password</Button> 
+              <Button onClick={this.gotToUserDetails} >View User Details</Button> 
             </Grid.Column>
           </Grid.Row>
         </Grid>

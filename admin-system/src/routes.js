@@ -6,6 +6,7 @@ import ElectionDate from "./Views/ElectionDate";
 import Settings from "./Views/Settings"
 import UploadCandidates from "./Views/UploadCandidates"
 import CandidatesList from "./Views/CandidatesList"
+import UserDetails from "./Views/UserDetails"
 
 const RouteObjects = [
     {
@@ -31,6 +32,10 @@ const RouteObjects = [
     {
         path: "/election",
         component: Election
+    },
+    {
+        path: "/settings/user",
+        component: UserDetails
     },
     {
         path: "/settings",

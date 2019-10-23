@@ -93,6 +93,7 @@ function MySnackbarContentWrapper(props) {
   );
 }
 
+// uploads the candidates tofirebase (database) using a csv file
 class UploadCandidates extends Component {
   _isMounted = false;
   constructor(props) {

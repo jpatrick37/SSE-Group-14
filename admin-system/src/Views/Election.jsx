@@ -4,18 +4,15 @@ import { IoIosToday, IoIosCalendar } from 'react-icons/io'
 import { Grid, Button } from 'semantic-ui-react'
 
 
-
+// this card dispalys a list of what the admin can do in the Election header
 class Election extends Component {
-  constructor(props) {
-    super(props);
-    this.state = ({ 
-    })
-  }
 
-
+  // loads the Election paper
   gotoViewElection = () => {
     this.props.history.push("/election/paper");
   }
+
+  // loads the elctions date period
   gotoElectionDate = () => {
     this.props.history.push("/election/date");
   }
@@ -23,7 +20,9 @@ class Election extends Component {
   render() {
     return (
       <div style= {{width: "100%"}}>
+        {/* load the NavBar */}
         <NavBar {...this.props} activeItem='election' />
+        {/* grid of items admin can do */}
         <Grid style={{marginLeft: "10px"}} columns={2} >
           <Grid.Row>
             <Grid.Column>

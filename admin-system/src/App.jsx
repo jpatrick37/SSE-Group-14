@@ -17,6 +17,7 @@ class App extends Component {
     super(props);
     this.state = ({
       user: null,
+      userDetails: null,
       fetchingUser: true
     });
     this.authListener = this.authListener.bind(this);
@@ -42,7 +43,7 @@ class App extends Component {
             this.setState({ user: null, fetchingUser: false });
           } else {
             console.log(doc.data());
-            this.setState({ user: doc.data(), fetchingUser: false });
+            this.setState({ user: doc.data(), userDetails: user, fetchingUser: false });
           }
         })
         .catch(err => {
@@ -50,6 +51,7 @@ class App extends Component {
         })
       }
       else {
+        console.log("Error getting user")
         this.setState({ user: null, fetchingUser: false });
       }
     });
@@ -60,7 +62,7 @@ class App extends Component {
       return (
         <Route
           path={route.path}
-          render={props => (<route.component {...props}/>)}
+          render={props => (<route.component user={this.state.user} userDetails={this.state.userDetails} {...props}/>)}
           key={key}
         />
       );
@@ -99,7 +101,7 @@ class App extends Component {
             <Router>
               <Switch>
                 { this.state.user && this.getRoutes(RouteObjects) }
-                <Route path={renderPath} render={props => <RenderPage {...props} />} />
+                <Route path={renderPath} render={props => <RenderPage user={this.state.user} userDetails={this.state.userDetails} {...props} />} />
                 <Redirect from="/" to={redirectPath} />
               </Switch>
             </Router>

@@ -1,12 +1,9 @@
 import React, { Component } from 'react';
 import NavBar from './NavBar.jsx';
-// import { Button } from 'semantic-ui-react'
 import { Container, Row, Col, FormGroup, FormLabel, FormControl } from 'react-bootstrap';
 import { firebase } from '../Firebase.jsx';
 
-
-
-
+// displalys what the voting paper would look like to voters
 class ElectionPaper extends Component {
     constructor(props) {
         super(props);
@@ -14,11 +11,12 @@ class ElectionPaper extends Component {
             parties: {},
             candidates: [],
             data: [],
-            vote: {},
         };
+        // refrence to the firebase database
         this.candidatesRef = firebase.firestore().collection('candidates');
     }
 
+    // runs when the firebase database changes
     onCandidatesCollectionUpdate = (querySnapshot) => {
         // Variables
         var candidates = [];
@@ -35,42 +33,15 @@ class ElectionPaper extends Component {
             parties[candidate.PARTY] = [candidate];
             }
         });
-        var vote = this.setupVoteObject(parties);
-        this.setState({ candidates, parties, vote })
+        this.setState({ candidates, parties })
     }
 
-    setupVoteObject = (parties) => {
-        var vote = { parties: {}, candidates: {} };
-        var partyKeys = Object.keys(parties);
-        for (var i=0; i<partyKeys.length; i++) {
-            var key = partyKeys[i];
-            var partyKey = partyKeys[i].toLowerCase().replace(/\s/g,'-');
-            vote.parties[partyKey] = "-";
-            for (var j=0; j<parties[key].length; j++) {
-            var candidateKey = (parties[key][j].SURNAME+'-'+parties[key][j].GIVEN_NAMES).toLowerCase();
-            vote.candidates[candidateKey] = "-";
-            }
-        }
-        return vote;
-    }
-
+    // runs when the componet first mounts
     componentDidMount() {
         this.unsubscribe = this.candidatesRef.onSnapshot(this.onCandidatesCollectionUpdate);
     }
 
-
-    handleVoteFormChange = (event) => {
-        var { vote } = this.state;
-        var { id, value } = event.target;
-        if (id.indexOf("party") !== -1) {
-            vote.parties[id] = value;
-        } else {
-            vote.candidates[id] = value;
-        }
-        this.setState({ vote });
-        // console.log(event.target.id, event.target.value);
-    }
-
+    // setups the parties to be displayed
     setupPartiesInput = (parties) => {
         var inputs = Object.keys(parties).map(function (key) {
             var uniqueKey = key.replace(/\s/g,'-').toLowerCase();
@@ -94,6 +65,7 @@ class ElectionPaper extends Component {
         return inputs;
     }
 
+    // sets up the candidates to be disaplyed
     setupCandidatesInput = (candidates, parties) => {
         var inputs = Object.keys(parties).map(function (key) {
             var candidatesInputs = [];
@@ -129,20 +101,15 @@ class ElectionPaper extends Component {
         return inputs;
     }
 
-    checkVote = (vote) => {
-    
-    }
 
-    handleVoteSubmit = (e) => {
-        e.preventDefault();
-        console.log(this.state.vote);
-    }
 
     render() {
-        // console.log(this.state.candidates, this.state.parties, this.state.vote);
         return (
             <div style= {{width: "100%"}}>
+                {/* displays the Nav bar */}
             <NavBar {...this.props} activeItem='election' />
+
+            {/* The voting paper */}
             <Container fluid>
                 <Row>
                 <Col>
@@ -151,7 +118,7 @@ class ElectionPaper extends Component {
                 </Col>
                 </Row>
                 <Row>
-                <form onChange={this.handleVoteFormChange} onSubmit={this.handleVoteSubmit}>
+                <form >
                     {/* Generating parties input */}
                     <Row>
                     {this.setupPartiesInput(this.state.parties)}

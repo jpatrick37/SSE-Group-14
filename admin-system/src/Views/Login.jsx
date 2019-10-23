@@ -91,6 +91,7 @@ MySnackbarContentWrapper.propTypes = {
   variant: PropTypes.oneOf(['error', 'info', 'success', 'warning']).isRequired,
 };
 
+// login class
 class Login extends Component {
   _isMounted = false;
   constructor(props) {
@@ -114,6 +115,7 @@ class Login extends Component {
     e.preventDefault();
     firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password)
     .then(firebaseUser => {
+      console.log(firebaseUser)
       console.log("Signed in!");
     })
     .catch(error => {
