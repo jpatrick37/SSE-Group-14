@@ -3,9 +3,11 @@ import {DateTimeInput } from 'semantic-ui-calendar-react';
 import { Form, Header, Modal, Button, Icon, Message } from 'semantic-ui-react'
 import NavBar from '../NavBar.jsx';
 import { firebase } from '../../Firebase';
-import ReactLoading from 'react-loading';
 
 import { getElectionTime, convertStringToDate } from '../../Functions/ElectionDetails'
+
+import LoadingSymbol from './../LoadingSymbol'
+
 
 // this class allows the admin to view and change the date of the election
 class ElectionDate extends Component {
@@ -140,7 +142,7 @@ class ElectionDate extends Component {
   render() {
     // if loading display loading 
     if(this.state.loading){
-      return <ReactLoading type="bubbles" color="blue" height={667} width={375} />
+      return <LoadingSymbol {...this.props} activeItem='election' />
     }
 
     return (

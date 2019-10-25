@@ -3,6 +3,8 @@ import NavBar from '../NavBar.jsx';
 import { Container, Row, Col, FormGroup, FormLabel, FormControl } from 'react-bootstrap';
 import { firebase } from '../../Firebase.jsx';
 
+import LoadingSymbol from './../LoadingSymbol'
+
 // displalys what the voting paper would look like to voters
 class ElectionPaper extends Component {
     constructor(props) {
@@ -11,6 +13,7 @@ class ElectionPaper extends Component {
             parties: {},
             candidates: [],
             data: [],
+            loading: true
         };
         // refrence to the firebase database
         this.candidatesRef = firebase.firestore().collection('candidates');
@@ -33,7 +36,7 @@ class ElectionPaper extends Component {
             parties[candidate.PARTY] = [candidate];
             }
         });
-        this.setState({ candidates, parties })
+        this.setState({ candidates, parties, loading: false })
     }
 
     // runs when the componet first mounts
@@ -104,6 +107,10 @@ class ElectionPaper extends Component {
 
 
     render() {
+        // if loading display loading 
+        if(this.state.loading){
+            return <LoadingSymbol {...this.props} activeItem='election' />
+        }
         return (
             <div style= {{width: "100%"}}>
                 {/* displays the Nav bar */}

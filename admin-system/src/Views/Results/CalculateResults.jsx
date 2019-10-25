@@ -6,7 +6,8 @@ import { IoLogoBuffer } from 'react-icons/io'
 import LoadingBar from 'react-top-loading-bar'
 
 import {getElectionTime, convertStringToDate} from '../../Functions/ElectionDetails'
-import ReactLoading from 'react-loading';
+
+import LoadingSymbol from './../LoadingSymbol'
 
 class CalculateResults extends Component {
   constructor(props) {
@@ -76,7 +77,15 @@ class CalculateResults extends Component {
   render() {
     // if havn't fetched time display loading bar
     if(this.state.fetchingTime){
-      return <ReactLoading type="bubbles" color="blue" height={667} width={375} />
+      return <LoadingSymbol {...this.props} activeItem='results' />
+    }
+    if (!this.isCurrenttimeAfter(convertStringToDate(this.state.endTime))){
+      return(
+        <div style= {{width: "100%"}}>
+          <NavBar {...this.props} activeItem='results' />
+          <Header as='h1'>The election is not over yet! </Header>
+        </div>
+      )
     }
     return (
       <div style= {{width: "100%"}}>

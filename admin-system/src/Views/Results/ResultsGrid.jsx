@@ -21,7 +21,7 @@ class Results extends Component {
             <Grid.Column>
               <IoIosBrowsers color='red' size="10em"/>
               <br/>
-              <Button onClick={this.goToResultsCalculation} >Calculate Results</Button> 
+              <Button color='red' onClick={this.goToResultsCalculation} >Calculate Results</Button> 
             </Grid.Column>
           </Grid.Row>
         </Grid>

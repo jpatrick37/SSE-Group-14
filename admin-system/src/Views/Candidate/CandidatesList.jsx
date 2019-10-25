@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { firebase } from '../../Firebase.jsx';
 import { Card } from 'semantic-ui-react'
-import ReactLoading from 'react-loading';
 import NavBar from "../NavBar"
 import '../../css/candidatesListCard.css'
+
+import LoadingSymbol from './../LoadingSymbol'
 
 import { buildCandidatesPartiesCards, convertPartiesToList } from "../../Functions/Candidates"
 // this class generates a list of parties and there candidates
@@ -49,9 +50,9 @@ class CandidatesList extends Component {
   }
 
   render() {
-    // if getting data from the database, display the loading symbol
-    if (!this.state.items){
-      return <ReactLoading type="bubbles" color="blue" height={667} width={375} />
+    // if havn't fetched time display loading bar
+    if(!this.state.items){
+      return <LoadingSymbol {...this.props} activeItem='candidates' />
     }
 
     return (

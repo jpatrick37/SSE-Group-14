@@ -3,7 +3,6 @@ import NavBar from './NavBar.jsx';
 import { Grid, Header, Button } from 'semantic-ui-react'
 import { IoIosToday, IoIosCalendar, IoIosList } from 'react-icons/io'
 
-
 class Home extends Component {
 
   // loads the Election paper
