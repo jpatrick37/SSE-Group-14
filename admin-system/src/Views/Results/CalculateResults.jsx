@@ -2,13 +2,12 @@ import React, { Component } from 'react';
 import NavBar from '../NavBar.jsx';
 import { Header, Button, Modal, Icon } from 'semantic-ui-react'
 import { IoLogoBuffer, IoMdSad } from 'react-icons/io'
-
 import LoadingBar from 'react-top-loading-bar'
-
-import {getElectionTime, convertStringToDate} from '../../Functions/ElectionDetails'
-
+import { getElectionTime, convertStringToDate } from '../../Functions/ElectionDetails'
 import LoadingSymbol from './../LoadingSymbol'
 
+
+// calculates the results of the election
 class CalculateResults extends Component {
   constructor(props) {
     super(props);
@@ -21,6 +20,7 @@ class CalculateResults extends Component {
     };
   }
 
+  // runs when the componet mounts
   async componentDidMount(){
     getElectionTime().then(result => {
       let time = result['message']
@@ -32,10 +32,7 @@ class CalculateResults extends Component {
     })
   }
 
-  complete = () => {
-    this.setState({ loadingBarProgress: 100 })
-  }
-
+  // when the load br is finished set it back to zero
   onLoaderFinished = () => {
     this.setState({ loadingBarProgress: 0 })
   }
@@ -45,6 +42,7 @@ class CalculateResults extends Component {
     this.setState({ warningOpen: true });
   }
   
+  // checks if the current time is after the inputted time
   isCurrenttimeAfter = (time) => {
     // ideally might want an api call to a time server(get curent time)
     let currentTime = new Date().getTime();
@@ -58,6 +56,7 @@ class CalculateResults extends Component {
     return false
   }
 
+  // try to count the results, if successful set the loading bar to 100 and remove the warning 
   calculateResults = (value) => {
     if(value){
       // if the election is over
@@ -100,24 +99,23 @@ class CalculateResults extends Component {
           onLoaderFinished={() => this.onLoaderFinished()}
         />
 
-
         {/* warning pop up shown if they want to claculate results */}
         <Modal open={this.state.warningOpen}  basic size='small'>
-              <Header icon='archive' content='Counting the Votes' />
-              <Modal.Content>
-                <p>
-                  You are about to calculate the results of the election. Are you sure?
-                </p>
-              </Modal.Content>
-              <Modal.Actions>
-                <Button basic color='grey' inverted onClick={() => this.calculateResults(false)}>
-                  <Icon name='remove' /> No
-                </Button>
-                <Button color='red' inverted onClick={() => this.calculateResults(true)}>
-                  <Icon name='checkmark' /> Yes
-                </Button>
-              </Modal.Actions>
-            </Modal>
+          <Header icon='archive' content='Counting the Votes' />
+          <Modal.Content>
+            <p>
+              You are about to calculate the results of the election. Are you sure?
+            </p>
+          </Modal.Content>
+          <Modal.Actions>
+            <Button basic color='grey' inverted onClick={() => this.calculateResults(false)}>
+              <Icon name='remove' /> No
+            </Button>
+            <Button color='red' inverted onClick={() => this.calculateResults(true)}>
+              <Icon name='checkmark' /> Yes
+            </Button>
+          </Modal.Actions>
+        </Modal>
       </div>
     )
   }

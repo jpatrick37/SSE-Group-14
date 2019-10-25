@@ -133,6 +133,7 @@ class UploadCandidates extends Component {
       variant: "success",
     });
   }
+  
   render() {
     const { open, vertical, horizontal, message, variant } = this.state;
     return (

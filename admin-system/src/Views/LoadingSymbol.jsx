@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import NavBar from './NavBar.jsx';
 import ReactLoading from 'react-loading';
 
+// displays a loading symbol
 class LoadingSymbol extends Component {
   render() {
     return (

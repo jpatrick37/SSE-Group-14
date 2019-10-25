@@ -20,8 +20,10 @@ class Election extends Component {
   render() {
     return (
       <div style= {{width: "100%"}}>
+        
         {/* load the NavBar */}
         <NavBar {...this.props} activeItem='election' />
+
         {/* grid of items admin can do */}
         <Grid style={{marginLeft: "10px"}} columns={2} >
           <Grid.Row>

@@ -97,6 +97,7 @@ class ElectionDate extends Component {
     this.setState({ warningOpen: true });
   }
 
+  // returns the start and end time as headers
   renderDates = () => {
     return (
       <div>
@@ -106,6 +107,7 @@ class ElectionDate extends Component {
     )
   }
 
+  // retursn the start and end time if the edit is disabled, else reutnr the edit fiels for start and end time
   renderForms = () => {
     if(this.state.disabled){
       return this.renderDates()
