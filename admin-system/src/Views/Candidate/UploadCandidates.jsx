@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import CSVReader from "react-csv-reader";
-import { firebase } from '../Firebase.jsx';
+import { firebase } from '../../Firebase.jsx';
 import * as ObjectHash from 'object-hash';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
@@ -16,7 +16,7 @@ import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import WarningIcon from '@material-ui/icons/Warning';
 import { Header } from 'semantic-ui-react'
-import NavBar from "./NavBar"
+import NavBar from "../NavBar"
 
 
 const variantIcon = {

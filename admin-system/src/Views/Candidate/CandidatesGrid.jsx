@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import NavBar from './NavBar.jsx';
+import NavBar from '../NavBar.jsx';
 import { Grid } from 'semantic-ui-react'
 import { IoMdCloudUpload, IoIosList } from 'react-icons/io'
 import { Button } from 'semantic-ui-react'

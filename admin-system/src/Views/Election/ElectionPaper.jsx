@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import NavBar from './NavBar.jsx';
+import NavBar from '../NavBar.jsx';
 import { Container, Row, Col, FormGroup, FormLabel, FormControl } from 'react-bootstrap';
-import { firebase } from '../Firebase.jsx';
+import { firebase } from '../../Firebase.jsx';
 
 // displalys what the voting paper would look like to voters
 class ElectionPaper extends Component {

@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import {DateTimeInput } from 'semantic-ui-calendar-react';
 import { Form, Header, Modal, Button, Icon, Message } from 'semantic-ui-react'
-import NavBar from './NavBar.jsx';
-import { firebase } from '../Firebase';
+import NavBar from '../NavBar.jsx';
+import { firebase } from '../../Firebase';
 import ReactLoading from 'react-loading';
+
+import { getElectionTime, convertStringToDate } from '../../Functions/ElectionDetails'
 
 // this class allows the admin to view and change the date of the election
 class ElectionDate extends Component {
@@ -18,76 +20,20 @@ class ElectionDate extends Component {
             submitted: false,
         };
         // refrence to the database
-        this.ref = firebase.firestore().collection("electionDetails")
+        this.electionCollection = firebase.firestore().collection("electionDetails")
     }
 
-  // runs when the componet firsts loads
-  componentDidMount(){
-    // refrence to the spefic 'table' in firebase
-    var timeDetailsRef = this.ref.doc("electionTime");
-    
-    // get data from 'table'
-    timeDetailsRef.get().then(doc => {
-      if (doc.exists){
-        // get data
-        let data = doc.data()
-        
-        // convert to javascript date objects
-        let startTimeDateObject = new Date(data['startTime']['seconds'] *1000)
-        let endTimeDateObject = new Date(data['endTime']['seconds'] * 1000)
-        
-        // convert to string
-        let startTime = this.convertDateToString(startTimeDateObject)
-        let endTime = this.convertDateToString(endTimeDateObject)
-      // set the new start and end time as well as stop the loading component
-        this.setState({
-          startTime,
-          endTime,
-          loading: false
-        })
+  // runs when the componet first loads
+  async componentDidMount(){
 
-      } else {
-        console.log("No Document Found")
-        this.setState({
-          loading: false
-        })
-      }
-    }).catch(error => {
-      console.log("Error getting document", error)
+    // gets the election times
+    getElectionTime().then(result => {
+      let time = result['message']
       this.setState({
-        loading: false
-      })
+        startTime: time['startTime'],
+        endTime: time['endTime'],
+        loading: false})
     })
-  }
-  
-  // converts a javascript date to a string of format dd-mm-yyy HH:MM
-  convertDateToString = (date) => {
-    let dateString = ""
-    dateString += date.getDate()
-    dateString += "-" + date.getMonth()
-    dateString += "-" + date.getFullYear()
-    dateString += " " + date.getHours()
-    dateString += ":" + date.getMinutes()
-    return dateString
-  }
-
-  // converts a string with format dd-mm-yyy HH:MM into a date object
-  convertStringToDate(input){
-    let splitArr = input.split("-").map(item => item.trim());
-    let day = splitArr[0]
-    let month = splitArr[1]
-
-    let yearTime = splitArr[2].split(" ").map(item => item.trim());
-    let year = yearTime[0]
-    let time = yearTime[1]
-    let timeSplit = time.split(":").map(item => item.trim());
-    let hours = timeSplit[0]
-    let minutes = timeSplit[1]
-
-    let date = new Date(year, month, day)
-    date.setHours(hours)
-    date.setMinutes(minutes)
-    return date;
   }
   
   // runs when the input field start Time changes
@@ -104,15 +50,28 @@ class ElectionDate extends Component {
     }
   }
 
+  isVaildDates(startDate, endDate){
+    console.log(startDate)
+    console.log(endDate)
+    // if start date is bigger than 
+    if (startDate < endDate){
+      return true
+    }
+    return false
+  }
+
   // submits the dates to firebase
   submitDates = () => {
     // refrecne to the firebase 'table'
-    var timeDetailsRef = this.ref.doc("electionTime");
+    var timeDetailsRef = this.electionCollection.doc("electionTime");
 
     // gets the startTime and endTime the user inputted
-    let startTime = this.convertStringToDate(this.state.startTime)
-    let endTime = this.convertStringToDate(this.state.endTime)
-    
+    let startTime = convertStringToDate(this.state.startTime)
+    let endTime = convertStringToDate(this.state.endTime)
+    if (!this.isVaildDates(startTime, endTime)){
+      console.log("start date is greater than end date")
+      return 
+    }
     // convert to object
     let object = {startTime: startTime, endTime: endTime}
 
@@ -139,8 +98,8 @@ class ElectionDate extends Component {
   renderDates = () => {
     return (
       <div>
-        <Header as='h1'>Start Time: {this.state.startTime} UTC</Header>
-        <Header as='h1'>End Time: {this.state.endTime} UTC</Header>
+        <Header as='h1'>Start Time: {this.state.startTime} UTC+10:30</Header>
+        <Header as='h1'>End Time: {this.state.endTime} UTC+10:30</Header>
       </div>
     )
   }

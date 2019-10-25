@@ -39,6 +39,12 @@ class NavBar extends Component {
     this.setState({ activeItem: name })
   }
 
+  // goes to the results page
+  gotoResults = (e, { name }) => {
+    this.props.history.push("/results");
+    this.setState({ activeItem: name })
+  }
+
   render() {
     
     return (
@@ -59,6 +65,11 @@ class NavBar extends Component {
             name='election details'
             active={this.state.activeItem === 'election'}
             onClick={this.gotoElection}
+          />
+          <Menu.Item
+            name='results'
+            active={this.state.activeItem === 'results'}
+            onClick={this.gotoResults}
           />
           <Menu.Menu position='right'>
             <Menu.Item

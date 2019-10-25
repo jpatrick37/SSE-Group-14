@@ -1,12 +1,14 @@
 
-import Candidates from "./Views/Candidates";
-import Election from "./Views/Election";
-import ElectionPaper from "./Views/ElectionPaper";
-import ElectionDate from "./Views/ElectionDate";
-import Settings from "./Views/Settings"
-import UploadCandidates from "./Views/UploadCandidates"
-import CandidatesList from "./Views/CandidatesList"
-import UserDetails from "./Views/UserDetails"
+import Candidates from "./Views/Candidate/CandidatesGrid";
+import Election from "./Views/Election/ElectionGrid";
+import ElectionPaper from "./Views/Election/ElectionPaper";
+import ElectionDate from "./Views/Election/ElectionDate";
+import Settings from "./Views/Settings/Settings"
+import UploadCandidates from "./Views/Candidate/UploadCandidates"
+import CandidatesList from "./Views/Candidate/CandidatesList"
+import UserDetails from "./Views/Settings/UserDetails"
+import Results from "./Views/Results/Results"
+import CalculateResults from "./Views/Results/CalculateResults"
 
 const RouteObjects = [
     {
@@ -40,6 +42,14 @@ const RouteObjects = [
     {
         path: "/settings",
         component: Settings
+    },
+    {       
+        path: "/results/calculation",
+        component: CalculateResults
+    },
+    {
+        path: "/results",
+        component: Results
     }
 ];
 

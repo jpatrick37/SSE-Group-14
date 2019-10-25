@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import NavBar from './NavBar.jsx';
+import NavBar from '../NavBar.jsx';
 import { List } from 'semantic-ui-react'
 
 

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import NavBar from './NavBar.jsx';
+import NavBar from '../NavBar.jsx';
 import { IoIosToday, IoIosCalendar } from 'react-icons/io'
 import { Grid, Button } from 'semantic-ui-react'
 
