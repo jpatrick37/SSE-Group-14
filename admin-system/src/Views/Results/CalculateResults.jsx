@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import NavBar from '../NavBar.jsx';
 import { Header, Button, Modal, Icon } from 'semantic-ui-react'
-import { IoLogoBuffer } from 'react-icons/io'
+import { IoLogoBuffer, IoMdSad } from 'react-icons/io'
 
 import LoadingBar from 'react-top-loading-bar'
 
@@ -83,7 +83,8 @@ class CalculateResults extends Component {
       return(
         <div style= {{width: "100%"}}>
           <NavBar {...this.props} activeItem='results' />
-          <Header as='h1'>The election is not over yet! </Header>
+          <Header as='h1'>The Election is not over yet! </Header>
+          <IoMdSad size="10em"/> <br />
         </div>
       )
     }

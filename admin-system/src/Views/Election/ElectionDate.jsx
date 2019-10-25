@@ -111,7 +111,7 @@ class ElectionDate extends Component {
       return this.renderDates()
     }
     return(
-          <div style= {{marginTop:'10px', marginLeft:'10px',width: "200px"}}>
+          <div style= {{margin: 'auto',width: "200px"}}>
             <Header large="true">Start Date</Header>
             <Form>
                 <DateTimeInput 
