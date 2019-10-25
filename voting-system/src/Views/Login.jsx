@@ -135,8 +135,8 @@ class Login extends Component {
     return (
       <Typography variant="body2" color="textSecondary" align="center">
         {'Copyright © '}
-        <Link color="inherit" href="https://material-ui.com/">
-          Your Website
+        <Link color="inherit">
+          Senate Voting System
         </Link>{' '}
         {new Date().getFullYear()}
         {'.'}
@@ -209,27 +209,16 @@ class Login extends Component {
                 autoComplete="current-password"
                 onChange={this.handleChange}
               />
-              <FormControlLabel
-                control={<Checkbox value="remember" color="primary" />}
-                label="Remember me"
-              />
               <Button
                 // type="submit"
                 fullWidth
                 variant="contained"
                 color="primary"
-                // className={loginClasses.submit}
+                className={loginClasses.submit}
                 onClick={this.login}
               >
                 Sign In
               </Button>
-              <Grid container>
-                <Grid item xs>
-                  <Link href="#" variant="body2">
-                    Forgot password?
-                  </Link>
-                </Grid>
-              </Grid>
             </form>
           </div>
           <Box mt={8}>
@@ -245,6 +234,7 @@ class Login extends Component {
           ContentProps={{
             'aria-describedby': 'message-id',
           }}
+          autoHideDuration={5000}
         >
           <MySnackbarContentWrapper
             onClose={() => this.setState({open: false})}

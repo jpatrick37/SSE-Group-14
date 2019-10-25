@@ -1,19 +1,112 @@
 import React, { Component } from 'react';
-import { Row, Col, FormGroup, FormLabel, FormControl, Container as BootstrapContainer } from 'react-bootstrap';
-import Container from '@material-ui/core/Container';
+import { Row, Col, FormGroup, FormLabel, FormControl, Container as BootstrapContainer, Card, Image } from 'react-bootstrap';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 import { firebase } from '../Firebase.jsx';
-import Slider from "react-slick";
+import logo from './../assets/images/ausgovlogo.png';
+import ReactLoading from 'react-loading';
+import MUIContainer from '@material-ui/core/Container';
 
-const sliderSettings = {
-  dots: true,
-  infinite: true,
-  speed: 500,
-  slidesToShow: 12,
-  slidesToScroll: 1,
-  arrows: false,
+// Snackbar Imports
+import PropTypes from 'prop-types';
+import clsx from 'clsx';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import ErrorIcon from '@material-ui/icons/Error';
+import InfoIcon from '@material-ui/icons/Info';
+import CloseIcon from '@material-ui/icons/Close';
+import { amber, green } from '@material-ui/core/colors';
+import IconButton from '@material-ui/core/IconButton';
+import Snackbar from '@material-ui/core/Snackbar';
+import SnackbarContent from '@material-ui/core/SnackbarContent';
+import WarningIcon from '@material-ui/icons/Warning';
+
+const variantIcon = {
+  success: CheckCircleIcon,
+  warning: WarningIcon,
+  error: ErrorIcon,
+  info: InfoIcon,
 };
+
+const useStyles1 = makeStyles(theme => ({
+  success: {
+    backgroundColor: green[600],
+  },
+  error: {
+    backgroundColor: theme.palette.error.dark,
+  },
+  info: {
+    backgroundColor: theme.palette.primary.main,
+  },
+  warning: {
+    backgroundColor: amber[700],
+  },
+  icon: {
+    fontSize: 20,
+  },
+  iconVariant: {
+    opacity: 0.9,
+    marginRight: theme.spacing(1),
+  },
+  message: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+}));
+
+function MySnackbarContentWrapper(props) {
+  const classes = useStyles1();
+  const { className, message, onClose, variant, ...other } = props;
+  const Icon = variantIcon[variant];
+
+  return (
+    <SnackbarContent
+      className={clsx(classes[variant], className)}
+      aria-describedby="client-snackbar"
+      message={
+        <span id="client-snackbar" className={classes.message}>
+          <Icon className={clsx(classes.icon, classes.iconVariant)} />
+          {message}
+        </span>
+      }
+      action={[
+        <IconButton key="close" aria-label="close" color="inherit" onClick={onClose}>
+          <CloseIcon className={classes.icon} />
+        </IconButton>,
+      ]}
+      {...other}
+    />
+  );
+}
+
+MySnackbarContentWrapper.propTypes = {
+  className: PropTypes.string,
+  message: PropTypes.string,
+  onClose: PropTypes.func,
+  variant: PropTypes.oneOf(['error', 'info', 'success', 'warning']).isRequired,
+};
+
+const charCode = 'a'.charCodeAt(0);
+
+var toAlphaNumber = function (a) {
+  var b = [a], sp, out, i, div;
+
+    sp = 0;
+    while(sp < b.length) {
+        if (b[sp] > 25) {
+            div = Math.floor(b[sp] / 26);
+            b[sp + 1] = div - 1;
+            b[sp] %= 26;
+        }
+        sp += 1;
+    }
+
+    out = "";
+    for (i = 0; i < b.length; i += 1) {
+        out = String.fromCharCode(charCode + b[i]) + out;
+    }
+
+    return out;
+}
 
 class Vote extends Component {
   _isMounted = false;
@@ -24,6 +117,10 @@ class Vote extends Component {
       candidates: [],
       data: [],
       vote: {},
+      fetchingCandidates: true,
+      open: false,
+      vertical: 'top',
+      horizontal: 'right',
     };
     this.candidatesRef = firebase.firestore().collection('candidates');
   }
@@ -47,7 +144,7 @@ class Vote extends Component {
     // Storing in React State
     if (this._isMounted) {
       var vote = this.setupVoteObject(parties);
-      this.setState({ candidates, parties, vote });
+      this.setState({ candidates, parties, vote, fetchingCandidates: false });
     }
   }
 
@@ -88,7 +185,7 @@ class Vote extends Component {
   }
 
   setupPartiesInput = (parties) => {
-    var inputs = Object.keys(parties).map(function (key) {
+    var inputs = Object.keys(parties).map(function (key, index) {
       var uniqueKey = key.replace(/\s/g,'-').toLowerCase();
       var inputOptions = [<option key={uniqueKey+"--"}>-</option>];
       for (var i=1; i<=Object.keys(parties).length; i++) {
@@ -97,17 +194,20 @@ class Vote extends Component {
         );
       }
       return (
-        <div key={uniqueKey+"-formgroup"} style={{display: "inline-block", float: "none", height: "100%"}}>
+        <div key={uniqueKey+"-formgroup"} className={"flex-column"} style={{padding: "10px", display: "inline-block", float: "none", height: "100%"}}>
           <Col md={8} style={{borderLeft: "1px solid black"}}>
-            <BootstrapContainer>
+            <Card style={{height: "100%", border: "0px"}}>
               <FormGroup>
-                <FormControl as="select" id={uniqueKey}>
+                <p style={{float: "left"}}>{toAlphaNumber(index).toUpperCase()}</p>
+                <br />
+                <br />
+                <FormControl as="select" id={uniqueKey} style={{padding: "1px", border: "3px solid black", width: "45px", WebkitAppearance: "none", MozAppearance: "none", textIndent: "1px", textOverflow: ""}}>
                   {inputOptions}
                 </FormControl>
                 <br />
                 <FormLabel><b>{key}</b></FormLabel>
               </FormGroup>
-            </BootstrapContainer>
+            </Card>
           </Col>
         </div>
       );
@@ -133,15 +233,15 @@ class Vote extends Component {
           <Row key={uniqueKey+"-formgroup"}>
             <FormGroup>
               <Row>
-                <Col md={4}>
-                  <FormControl as="select" id={uniqueKey}>
+                <Col md={6}>
+                  <FormControl as="select" id={uniqueKey} style={{padding: "1px", margin: "0px", border: "3px solid black", width: "45px", WebkitAppearance: "none", MozAppearance: "none", textIndent: "1px", textOverflow: ""}}>
                     {inputOptions}
                   </FormControl>
                 </Col>
-                <Col md={8}>
-                  <p>{parties[key][i].SURNAME}</p>
-                  <p>{parties[key][i].GIVEN_NAMES}</p>
-                  <p><small>{key}</small></p>
+                <Col md={6}>
+                  <p style={{padding: "0px", margin: "0px", textAlign: "justify"}}>{parties[key][i].SURNAME}</p>
+                  <p style={{padding: "0px", margin: "0px", textAlign: "justify"}}>{parties[key][i].GIVEN_NAMES}</p>
+                  <p style={{padding: "0px", margin: "0px", textAlign: "justify"}}><small>{key}</small></p>
                 </Col>
               </Row>
             </FormGroup>
@@ -150,14 +250,14 @@ class Vote extends Component {
       }
       // Returning
       return (
-        <div key={key.replace(/\s/g,'-').toLowerCase()+"-candidates-cols"} style={{display: "inline-block", float: "none", borderLeft: "1px solid black"}}>
+        <div key={key.replace(/\s/g,'-').toLowerCase()+"-candidates-cols"} style={{padding: "10px", display: "inline-block", float: "none", borderLeft: "1px solid black"}}>
           <Col md={8}>
-            <BootstrapContainer>
+            <Card style={{height: "100%", border: "0px"}}>
               <FormLabel><b>{key}</b></FormLabel>
               <hr />
               <br />
               {candidatesInputs}
-            </BootstrapContainer>
+            </Card>
           </Col>
         </div>
       );
@@ -171,70 +271,116 @@ class Vote extends Component {
 
   handleVoteSubmit = (e) => {
     e.preventDefault();
+    this.setState({open: true});
     console.log(this.state.vote);
   }
 
+  gotoHome = () => {
+    this.props.history.push("/home");
+  }
+
   render() {
+    // If candidates hasn't been fetched yet
+    if(this.state.fetchingCandidates){
+      return (
+        <div className="App container">
+          <MUIContainer component="main" maxWidth="xs">
+            <BootstrapContainer fluid >
+              <ReactLoading type="bubbles" color="blue" height={667} width={375} />
+            </BootstrapContainer>
+          </MUIContainer>
+        </div>
+      )
+    }
     const buttonClasses = makeStyles(theme => ({
       button: {
         margin: theme.spacing(10),
       }
     }));
+    // For snackbar i.e. notifications
+    const { vertical, horizontal, open } = this.state;
     return (
       <div className="App content">
         <BootstrapContainer style={{padding: "30px"}}>
           <Row>
-            <Col>
-              <h1>Voting</h1>
-              <hr />
-            </Col>
+            <Image src={logo} style={{maxHeight: "50px", float: "left", paddingRight: "30px"}}/>
+            <h5 style={{textAlign: "justify", float: "right"}}> Senate Ballot Paper<br/><b>State</b> - Election of {"n"} Senators</h5>
           </Row>
+          <hr />
           <Row>
             <form onChange={this.handleVoteFormChange} onSubmit={this.handleVoteSubmit} style={{padding: "20px"}}>
               {/* Generating parties input */}
               <Row style={{overflowX: "auto"}}>
                 <Col md={1}>
-                  <div style={{textAlign: "justify"}}>
-                    <h4><b>You may vote in one of two ways</b></h4>
-                    <h4 style={{backgroundColor: "#212529", color: "white"}}><b>Either:</b></h4>
-                    <h4><b>Above the line</b></h4>
-                    <p>By numbering at least <b>6</b> of these boxes in the order of your choice (with number 1 as your first choice).</p>
-                  </div>
+                  <Card style={{border: "none"}}>
+                    <div style={{textAlign: "justify"}}>
+                      <h5><b>You may vote in one of two ways</b></h5>
+                      <h5 style={{backgroundColor: "#212529", color: "white"}}><b>Either:</b></h5>
+                      <h5><b>Above the line</b></h5>
+                      <p>By numbering at least <b>6</b> of these boxes in the order of your choice (with number 1 as your first choice).</p>
+                    </div>
+                  </Card>
                 </Col>
                 {/* <Slider {...sliderSettings}> */}
                 <Col md={11}>
-                  <Row>
-                    <div style={{overflowX: "scroll", whiteSpace: "nowrap"}}>
-                      {this.setupPartiesInput(this.state.parties)}
-                    </div>
-                  </Row>
+                  <Card style={{border: "none"}}>
+                    <Row>
+                      <div style={{overflowX: "scroll", whiteSpace: "nowrap", borderRight: "1px solid black"}}>
+                        {this.setupPartiesInput(this.state.parties)}
+                      </div>
+                    </Row>
+                  </Card>
                 </Col>
                 {/* </Slider> */}
               </Row>
               <hr style={{border: "10px solid black"}} />
               <Row>
                 <Col md={1}>
-                  <div style={{textAlign: "justify"}}>
-                    <h4><b>Or:</b></h4>
-                    <h4 style={{backgroundColor: "#212529", color: "white"}}><b>Below the line</b></h4>
-                    <p>By numbering at least <b>12</b> of these boxes in the order of your choice (with number 1 as your first choice).</p>
-                  </div>
+                  <Card style={{border: "none"}}>
+                    <div style={{textAlign: "justify"}}>
+                      <h5 style={{backgroundColor: "#212529", color: "white"}}><b>Or:</b></h5>
+                      <h5><b>Below the line</b></h5>
+                      <p>By numbering at least <b>12</b> of these boxes in the order of your choice (with number 1 as your first choice).</p>
+                    </div>
+                  </Card>
                 </Col>
                 <Col md={11} style={{overflowX: "auto"}}>
-                  <Row>
-                    <div style={{overflowX: "scroll", whiteSpace: "nowrap"}}>
-                      {this.setupCandidatesInput(this.state.candidates, this.state.parties)}
-                    </div>
-                  </Row>
+                 <Card style={{border: "none"}}>
+                    <Row>
+                      <div style={{overflowX: "scroll", whiteSpace: "nowrap", borderRight: "1px solid black"}}>
+                        {this.setupCandidatesInput(this.state.candidates, this.state.parties)}
+                      </div>
+                    </Row>
+                  </Card>
                 </Col>
               </Row>
               <hr />
               <Row>
-                <Button type="submit" fullWidth variant="contained" color="primary" className={buttonClasses.button}>Submit Vote</Button>
+                <Button type="submit" fullWidth variant="contained" color="primary" disabled={this.props.user.voted} className={buttonClasses.button}>Submit Vote</Button>
+              </Row>
+              <Row>
+                <Button fullWidth variant="contained" color="secondary" className={buttonClasses.button} onClick={this.gotoHome}>Back to home</Button>
               </Row>
             </form>
           </Row>
         </BootstrapContainer>
+        {/* Notification (Snackbar) */}
+        <Snackbar
+          anchorOrigin={{ vertical, horizontal }}
+          key={`${vertical},${horizontal}`}
+          open={open}
+          onClose={() => this.setState({open: false})}
+          ContentProps={{
+            'aria-describedby': 'message-id',
+          }}
+          autoHideDuration={5000}
+        >
+          <MySnackbarContentWrapper
+            onClose={() => this.setState({open: false})}
+            variant="error"
+            message="Invalid vote"
+          />
+        </Snackbar>
       </div>
     );
   }
@@ -242,55 +388,6 @@ class Vote extends Component {
 
 export default Vote;
 
-/**** Voting HAML Script - For reference
+/**** AEC Practise Vote
  * Link: https://www.aec.gov.au/Voting/How_to_vote/practice/practice-senate.htm
- * 
- * %h1{ class: "font-weight-bold" } Voting
- * %hr{ class: "border" } 
- * %br
- * - flash.each do |key, value|
- *   = content_tag :div, value, class: "flash #{key}"
- * 
- * = form_tag vote_index_path do
- * 
- *   %hr{ class: "border" }
- *   %div{ class: "container" }
- *     %div{ class: "row" }
- *       %div{ class: "col col-sm-2 border-right"}
- *         %h3{ class: "font-weight-bold" }You may vote in one of two ways
- *         %h3{ class: "font-weight-bold bg-container" }Either:
- *         %h3{ class: "font-weight-bold" }Above the line
- *         %p By numbering at least 6 of these boxes in the order of your choice (with number 1 as your first choice)
- *       %div{ class: "col" }
- *         %div{ class: "row" }
- *           - Candidate.all_parties.each_with_index do |current_party, i|
- *             %div{ class: "col-sm-2 mb-2 border-right border-left" }
- *               %div{ class: "col" }
- *                 = label :vote, current_party.to_sym, current_party
- *               %div{ class: "col" }
- *                 = number_field :vote, current_party
- *   %br
- *   %hr{ class: "border" }
- *   %div{ class: "container-fluid"}
- *     %div{ class: "row flex-row flex-nowrap" }
- *       %div{ class: "col col-sm-2 border-right" }
- *         %div{ class: "card card-block"}
- *           %h3{ class: "font-weight-bold bg-container" } Or:
- *           %h3{ class: "font-weight-bold" } Below the line
- *           %p By numbering at least 12 of these boxes in the order of your choice (with number 1 as your first choice).
- *       - Candidate.all_parties.each do |current_party|
- *         %div{ class: "col-3 border-right border-left" }
- *           %div{ class: "card card-block"}
- *             %h3{ class: "font-weight-bold" } #{current_party}
- *             - Candidate.where(party: current_party).each_with_index do |c, i|
- *               %div{ class: "row mb-2" }
- *                 %div{ class: "col mb-2" }
- *                   = label :vote, (i.to_s+current_party).to_sym, c.get_info
- *                 %div{ class: "col mb-2" }
- *                   = number_field :vote, (i.to_s+current_party)
- *   %br
- *   %hr{ class: "border" }  
- *   %p= submit_tag 'Submit vote', class: "btn btn-default"
- *       
- * %p= link_to 'Back to the Home page', home_index_path, class: "btn btn-default"
  */
