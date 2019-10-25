@@ -1,6 +1,19 @@
 import React, { Component } from 'react';
-import { Container, Row, Col, FormGroup, FormLabel, FormControl, Button } from 'react-bootstrap';
+import { Row, Col, FormGroup, FormLabel, FormControl, Container as BootstrapContainer } from 'react-bootstrap';
+import Container from '@material-ui/core/Container';
+import Button from '@material-ui/core/Button';
+import { makeStyles } from '@material-ui/core/styles';
 import { firebase } from '../Firebase.jsx';
+import Slider from "react-slick";
+
+const sliderSettings = {
+  dots: true,
+  infinite: true,
+  speed: 500,
+  slidesToShow: 12,
+  slidesToScroll: 1,
+  arrows: false,
+};
 
 class Vote extends Component {
   _isMounted = false;
@@ -46,7 +59,7 @@ class Vote extends Component {
       var partyKey = partyKeys[i].toLowerCase().replace(/\s/g,'-');
       vote.parties[partyKey] = "-";
       for (var j=0; j<parties[key].length; j++) {
-        var candidateKey = (parties[key][j].SURNAME+'-'+parties[key][j].GIVEN_NAMES).toLowerCase();
+        var candidateKey = (parties[key][j].SURNAME+'-'+parties[key][j].GIVEN_NAMES+"-from-"+key.replace(/\s/g,'-')).toLowerCase();
         vote.candidates[candidateKey] = "-";
       }
     }
@@ -65,10 +78,10 @@ class Vote extends Component {
   handleVoteFormChange = (event) => {
     var { vote } = this.state;
     var { id, value } = event.target;
-    if (id.indexOf("party") !== -1) {
-      vote.parties[id] = value;
-    } else {
+    if (id.indexOf("-from-") !== -1) {
       vote.candidates[id] = value;
+    } else {
+      vote.parties[id] = value;
     }
     this.setState({ vote });
     // console.log(event.target.id, event.target.value);
@@ -84,14 +97,19 @@ class Vote extends Component {
         );
       }
       return (
-        <Col key={uniqueKey+"-formgroup"}>
-          <FormGroup>
-            <FormLabel>{key}</FormLabel>
-            <FormControl as="select" id={uniqueKey}>
-              {inputOptions}
-            </FormControl>
-          </FormGroup>
-        </Col>
+        <div key={uniqueKey+"-formgroup"} style={{display: "inline-block", float: "none", height: "100%"}}>
+          <Col md={8} style={{borderLeft: "1px solid black"}}>
+            <BootstrapContainer>
+              <FormGroup>
+                <FormControl as="select" id={uniqueKey}>
+                  {inputOptions}
+                </FormControl>
+                <br />
+                <FormLabel><b>{key}</b></FormLabel>
+              </FormGroup>
+            </BootstrapContainer>
+          </Col>
+        </div>
       );
     });
     return inputs;
@@ -102,7 +120,7 @@ class Vote extends Component {
       var candidatesInputs = [];
       for (var i=0; i<parties[key].length; i++) {
         // Unique Key
-        var uniqueKey = (parties[key][i].SURNAME+"-"+parties[key][i].GIVEN_NAMES).toLowerCase();
+        var uniqueKey = (parties[key][i].SURNAME+"-"+parties[key][i].GIVEN_NAMES+"-from-"+key.replace(/\s/g,'-')).toLowerCase();
         // Setting up options
         var inputOptions = [<option key={uniqueKey+"--"}>-</option>];
         for (var j=0; j<candidates.length; j++) {
@@ -114,19 +132,34 @@ class Vote extends Component {
         candidatesInputs.push(
           <Row key={uniqueKey+"-formgroup"}>
             <FormGroup>
-              <FormLabel>{parties[key][i].SURNAME+" "+parties[key][i].GIVEN_NAMES}</FormLabel>
-              <FormControl as="select" id={uniqueKey}>
-                {inputOptions}
-              </FormControl>
+              <Row>
+                <Col md={4}>
+                  <FormControl as="select" id={uniqueKey}>
+                    {inputOptions}
+                  </FormControl>
+                </Col>
+                <Col md={8}>
+                  <p>{parties[key][i].SURNAME}</p>
+                  <p>{parties[key][i].GIVEN_NAMES}</p>
+                  <p><small>{key}</small></p>
+                </Col>
+              </Row>
             </FormGroup>
           </Row>
         );
       }
       // Returning
       return (
-        <Col key={key.replace(/\s/g,'-').toLowerCase()+"-candidates-cols"}>
-          {candidatesInputs}
-        </Col>
+        <div key={key.replace(/\s/g,'-').toLowerCase()+"-candidates-cols"} style={{display: "inline-block", float: "none", borderLeft: "1px solid black"}}>
+          <Col md={8}>
+            <BootstrapContainer>
+              <FormLabel><b>{key}</b></FormLabel>
+              <hr />
+              <br />
+              {candidatesInputs}
+            </BootstrapContainer>
+          </Col>
+        </div>
       );
     });
     return inputs;
@@ -142,10 +175,14 @@ class Vote extends Component {
   }
 
   render() {
-    // console.log(this.state.candidates, this.state.parties, this.state.vote);
+    const buttonClasses = makeStyles(theme => ({
+      button: {
+        margin: theme.spacing(10),
+      }
+    }));
     return (
-      <div className="App">
-        <Container fluid>
+      <div className="App content">
+        <BootstrapContainer style={{padding: "30px"}}>
           <Row>
             <Col>
               <h1>Voting</h1>
@@ -153,21 +190,51 @@ class Vote extends Component {
             </Col>
           </Row>
           <Row>
-            <form onChange={this.handleVoteFormChange} onSubmit={this.handleVoteSubmit}>
+            <form onChange={this.handleVoteFormChange} onSubmit={this.handleVoteSubmit} style={{padding: "20px"}}>
               {/* Generating parties input */}
+              <Row style={{overflowX: "auto"}}>
+                <Col md={1}>
+                  <div style={{textAlign: "justify"}}>
+                    <h4><b>You may vote in one of two ways</b></h4>
+                    <h4 style={{backgroundColor: "#212529", color: "white"}}><b>Either:</b></h4>
+                    <h4><b>Above the line</b></h4>
+                    <p>By numbering at least <b>6</b> of these boxes in the order of your choice (with number 1 as your first choice).</p>
+                  </div>
+                </Col>
+                {/* <Slider {...sliderSettings}> */}
+                <Col md={11}>
+                  <Row>
+                    <div style={{overflowX: "scroll", whiteSpace: "nowrap"}}>
+                      {this.setupPartiesInput(this.state.parties)}
+                    </div>
+                  </Row>
+                </Col>
+                {/* </Slider> */}
+              </Row>
+              <hr style={{border: "10px solid black"}} />
               <Row>
-                {this.setupPartiesInput(this.state.parties)}
+                <Col md={1}>
+                  <div style={{textAlign: "justify"}}>
+                    <h4><b>Or:</b></h4>
+                    <h4 style={{backgroundColor: "#212529", color: "white"}}><b>Below the line</b></h4>
+                    <p>By numbering at least <b>12</b> of these boxes in the order of your choice (with number 1 as your first choice).</p>
+                  </div>
+                </Col>
+                <Col md={11} style={{overflowX: "auto"}}>
+                  <Row>
+                    <div style={{overflowX: "scroll", whiteSpace: "nowrap"}}>
+                      {this.setupCandidatesInput(this.state.candidates, this.state.parties)}
+                    </div>
+                  </Row>
+                </Col>
               </Row>
               <hr />
               <Row>
-                {this.setupCandidatesInput(this.state.candidates, this.state.parties)}
-              </Row>
-              <Row>
-                <Button variant="success" type="submit" block>Submit Vote</Button>
+                <Button type="submit" fullWidth variant="contained" color="primary" className={buttonClasses.button}>Submit Vote</Button>
               </Row>
             </form>
           </Row>
-        </Container>
+        </BootstrapContainer>
       </div>
     );
   }

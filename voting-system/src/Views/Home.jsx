@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { firebase } from '../Firebase.jsx';
-import { Button } from "react-bootstrap";
+import Container from '@material-ui/core/Container';
+import Button from '@material-ui/core/Button';
+import { makeStyles } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
 
 class Home extends Component {
   _isMounted = false;
@@ -32,12 +35,21 @@ class Home extends Component {
   }
 
   render() {
+    const buttonClasses = makeStyles(theme => ({
+      button: {
+        margin: theme.spacing(10),
+      }
+    }));
     return (
       <div className="App">
-        <h1>HOME</h1>
-        <Button onClick={this.gotoVote}>Vote</Button>
-        <Button onClick={this.logout}>Log Out</Button>
-        <Button onClick={this.gotoSetup}>Setup</Button>
+        <Grid container justify = "center">
+          <Container maxWidth={"xl"}>
+            <h1>HOME</h1>
+            <hr />
+            <Button onClick={this.gotoVote} variant="contained" color="primary" className={buttonClasses.button}>Vote</Button>
+            <Button onClick={this.logout} variant="contained" color="secondary" className={buttonClasses.button}>Log Out</Button>
+          </Container>
+        </Grid>
       </div>
     );
   }
