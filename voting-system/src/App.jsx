@@ -39,7 +39,9 @@ class App extends Component {
           if (!doc.exists) {
             this.setState({ user: null, fetchingUser: false });
           } else {
-            this.setState({ user: doc.data(), fetchingUser: false });
+            var theUser = doc.data();
+            theUser.id = doc.id;
+            this.setState({ user: theUser, fetchingUser: false });
           }
         })
         .catch(err => {

@@ -6,6 +6,7 @@ import { firebase } from '../Firebase.jsx';
 import logo from './../assets/images/ausgovlogo.png';
 import ReactLoading from 'react-loading';
 import MUIContainer from '@material-ui/core/Container';
+import validate_vote from '../scripts/validate_vote.js';
 
 // Snackbar Imports
 import PropTypes from 'prop-types';
@@ -148,10 +149,12 @@ class Vote extends Component {
         partiesCheck[candidate.PARTY] = index++;
       }
     });
-    // Sorting candidates and partiesObj
+    // Sorting candidates and parties
     candidates.sort((a, b) => (a.BALLOT_POSITION > b.BALLOT_POSITION) ? 1 : -1);
     parties.sort((a, b) => (a.BALLOT_POSITION > b.BALLOT_POSITION) ? 1 : -1);
-    console.log(parties);
+    for (var i=0; i<parties.length; i++) {
+      parties[i].candidates.sort((a, b) => (a.BALLOT_POSITION > b.BALLOT_POSITION) ? 1 : -1);
+    }
     // Storing in React State
     if (this._isMounted) {
       var vote = this.setupVoteObject(parties);
@@ -190,7 +193,6 @@ class Vote extends Component {
       vote.parties[id] = value;
     }
     this.setState({ vote });
-    // console.log(event.target.id, event.target.value);
   }
 
   setupPartiesInput = (parties) => {
@@ -281,33 +283,43 @@ class Vote extends Component {
   convertVoteToObjectFormat = (vote) => {
     var candidates = [];
     var parties = [];
-    var above_the_line_array = [];
-    var below_the_line_array = [];
+    var above_the_line = [];
+    var below_the_line = [];
     for (var candidateID of Object.keys(vote.candidates)) {
       var candidate = {};
       var split = candidateID.split("|");
-      candidate.SURNAME = split[0].split(":")[1].toUpperCase();
-      candidate.GIVEN_NAMES = split[1].split(":")[1].toUpperCase();
-      candidate.PARTY = split[2].split(":")[1].toUpperCase().replace(/-/g,' ');
+      candidate.BALLOT_POSITION = split[0].split(":")[1].toUpperCase();
+      candidate.SURNAME = split[1].split(":")[1].toUpperCase();
+      candidate.GIVEN_NAMES = split[2].split(":")[1].toUpperCase();
+      candidate.PARTY = split[3].split(":")[1].toUpperCase().replace(/-/g,' ');
       candidate.PREFERENCE = vote.candidates[candidateID];
+      below_the_line.push(vote.candidates[candidateID]);
       candidates.push(candidate);
     }
     for (var partyID of Object.keys(vote.parties)) {
       var party = {};
-      party.NAME = partyID.replace(/-/g,' ').toUpperCase();
+      split = partyID.split("|")
+      party.BALLOT_POSITION = split[0].split(":")[1];
+      party.NAME = split[1].split(":")[1].replace(/-/g,' ').toUpperCase();
       party.PREFERENCE = vote.parties[partyID];
+      above_the_line.push(vote.parties[partyID])
       parties.push(party);
     }
-    console.log(candidates, parties);
+    // console.log(candidates, parties, above_the_line, below_the_line);
+    return {candidates, parties, above_the_line, below_the_line};
   }
 
   handleVoteSubmit = (e) => {
     e.preventDefault();
     this.checkVote(this.state.vote);
     this.setState({open: true});
-    console.log(this.state.vote);
-    // this.convertVoteToObjectFormat(this.state.vote);
-    this.props.history.push("/home");
+    var vote = this.convertVoteToObjectFormat(this.state.vote);
+    var validated = validate_vote(vote.above_the_line, vote.below_the_line, 6, 12);
+    console.log(validated);
+    console.log(vote);
+    // firebase.firestore().collection("votes").add({aboveTheLine: vote.above_the_line, belowTheLine: vote.below_the_line});
+    // firebase.firestore().collection('users').doc(this.props.user.id).update({ voted: true });
+    // this.props.history.push("/home");
   }
 
   gotoHome = () => {
@@ -391,7 +403,8 @@ class Vote extends Component {
               </Row>
               <hr />
               <Row>
-                <Button type="submit" fullWidth variant="contained" color="primary" disabled={this.props.user.voted} className={buttonClasses.button}>Submit Vote</Button>
+              {/* disabled={this.props.user.voted} */}
+                <Button type="submit" fullWidth variant="contained" color="primary" className={buttonClasses.button}>Submit Vote</Button>
               </Row>
               <Row>
                 <Button fullWidth variant="contained" color="secondary" className={buttonClasses.button} onClick={this.gotoHome}>Back to home</Button>
