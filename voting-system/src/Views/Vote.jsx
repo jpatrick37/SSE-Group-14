@@ -128,19 +128,30 @@ class Vote extends Component {
   onCandidatesCollectionUpdate = (querySnapshot) => {
     // Variables
     var candidates = [];
-    var parties = {};
+    var parties = [];
+    var partiesCheck = {};
+    var index = 0;
     // Fetching
     querySnapshot.forEach(doc => {
       // Pushing to variables
+      // Setting up candidate
       var candidate = doc.data();
       candidate.id = doc.id;
+      candidate.BALLOT_POSITION = parseInt(candidate.BALLOT_POSITION);
       candidates.push(candidate);
-      if (Array.isArray(parties[candidate.PARTY])) {
-        parties[candidate.PARTY].push(candidate);
+      // Setting up party
+      if (partiesCheck.hasOwnProperty(candidate.PARTY)) {
+        parties[partiesCheck[candidate.PARTY]].candidates.push(candidate);
+        parties[partiesCheck[candidate.PARTY]].BALLOT_POSITION = Math.min(parties[partiesCheck[candidate.PARTY]].BALLOT_POSITION, candidate.BALLOT_POSITION)
       } else {
-        parties[candidate.PARTY] = [candidate];
+        parties.push({NAME: candidate.PARTY, BALLOT_POSITION: candidate.BALLOT_POSITION, candidates: [candidate]});
+        partiesCheck[candidate.PARTY] = index++;
       }
     });
+    // Sorting candidates and partiesObj
+    candidates.sort((a, b) => (a.BALLOT_POSITION > b.BALLOT_POSITION) ? 1 : -1);
+    parties.sort((a, b) => (a.BALLOT_POSITION > b.BALLOT_POSITION) ? 1 : -1);
+    console.log(parties);
     // Storing in React State
     if (this._isMounted) {
       var vote = this.setupVoteObject(parties);
@@ -150,13 +161,11 @@ class Vote extends Component {
 
   setupVoteObject = (parties) => {
     var vote = { parties: {}, candidates: {} };
-    var partyKeys = Object.keys(parties);
-    for (var i=0; i<partyKeys.length; i++) {
-      var key = partyKeys[i];
-      var partyKey = partyKeys[i].toLowerCase().replace(/\s/g,'-');
+    for (var i=0; i<parties.length; i++) {
+      var partyKey = ("POSITION:"+parties[i].BALLOT_POSITION+"|NAME:"+parties[i].NAME).toLowerCase().replace(/\s/g,'-');
       vote.parties[partyKey] = "-";
-      for (var j=0; j<parties[key].length; j++) {
-        var candidateKey = (parties[key][j].SURNAME+'-'+parties[key][j].GIVEN_NAMES+"-from-"+key.replace(/\s/g,'-')).toLowerCase();
+      for (var j=0; j<parties[i].candidates.length; j++) {
+        var candidateKey = ("POSITION:"+parties[i].candidates[j].BALLOT_POSITION+"|SURNAME:"+parties[i].candidates[j].SURNAME+'|GIVEN_NAMES:'+parties[i].candidates[j].GIVEN_NAMES+"|PARTY:"+parties[i].NAME.replace(/\s/g,'-')).toLowerCase();
         vote.candidates[candidateKey] = "-";
       }
     }
@@ -175,7 +184,7 @@ class Vote extends Component {
   handleVoteFormChange = (event) => {
     var { vote } = this.state;
     var { id, value } = event.target;
-    if (id.indexOf("-from-") !== -1) {
+    if (id.indexOf("surname") !== -1 && id.indexOf("given_names")) {
       vote.candidates[id] = value;
     } else {
       vote.parties[id] = value;
@@ -185,10 +194,10 @@ class Vote extends Component {
   }
 
   setupPartiesInput = (parties) => {
-    var inputs = Object.keys(parties).map(function (key, index) {
-      var uniqueKey = key.replace(/\s/g,'-').toLowerCase();
+    var inputs = parties.map(function (party, index) {
+      var uniqueKey = ("POSITION:"+party.BALLOT_POSITION+"|NAME:"+party.NAME).replace(/\s/g,'-').toLowerCase();
       var inputOptions = [<option key={uniqueKey+"--"}>-</option>];
-      for (var i=1; i<=Object.keys(parties).length; i++) {
+      for (var i=1; i<=parties.length; i++) {
         inputOptions.push(
           <option value={i} key={uniqueKey+"-option-"+i}>{i}</option>
         );
@@ -205,7 +214,7 @@ class Vote extends Component {
                   {inputOptions}
                 </FormControl>
                 <br />
-                <FormLabel><b>{key}</b></FormLabel>
+                <FormLabel><b>{party.NAME}</b></FormLabel>
               </FormGroup>
             </Card>
           </Col>
@@ -216,14 +225,14 @@ class Vote extends Component {
   }
 
   setupCandidatesInput = (candidates, parties) => {
-    var inputs = Object.keys(parties).map(function (key) {
+    var inputs = parties.map(function (party, index) {
       var candidatesInputs = [];
-      for (var i=0; i<parties[key].length; i++) {
+      for (var i=0; i<party.candidates.length; i++) {
         // Unique Key
-        var uniqueKey = (parties[key][i].SURNAME+"-"+parties[key][i].GIVEN_NAMES+"-from-"+key.replace(/\s/g,'-')).toLowerCase();
+        var uniqueKey = ("POSITION:"+party.candidates[i].BALLOT_POSITION+"|SURNAME:"+party.candidates[i].SURNAME+"|GIVEN_NAMES:"+party.candidates[i].GIVEN_NAMES+"|PARTY:"+party.NAME.replace(/\s/g,'-')).toLowerCase();
         // Setting up options
         var inputOptions = [<option key={uniqueKey+"--"}>-</option>];
-        for (var j=0; j<candidates.length; j++) {
+        for (var j=1; j<=candidates.length; j++) {
           inputOptions.push(
             <option value={j} key={uniqueKey+"-option-"+j}>{j}</option>
           );
@@ -239,9 +248,9 @@ class Vote extends Component {
                   </FormControl>
                 </Col>
                 <Col md={6}>
-                  <p style={{padding: "0px", margin: "0px", textAlign: "justify"}}>{parties[key][i].SURNAME}</p>
-                  <p style={{padding: "0px", margin: "0px", textAlign: "justify"}}>{parties[key][i].GIVEN_NAMES}</p>
-                  <p style={{padding: "0px", margin: "0px", textAlign: "justify"}}><small>{key}</small></p>
+                  <p style={{padding: "0px", margin: "0px", textAlign: "justify"}}>{party.candidates[i].SURNAME}</p>
+                  <p style={{padding: "0px", margin: "0px", textAlign: "justify"}}>{party.candidates[i].GIVEN_NAMES}</p>
+                  <p style={{padding: "0px", margin: "0px", textAlign: "justify"}}><small>{party.NAME}</small></p>
                 </Col>
               </Row>
             </FormGroup>
@@ -250,10 +259,10 @@ class Vote extends Component {
       }
       // Returning
       return (
-        <div key={key.replace(/\s/g,'-').toLowerCase()+"-candidates-cols"} style={{padding: "10px", display: "inline-block", float: "none", borderLeft: "1px solid black"}}>
+        <div key={party.NAME.replace(/\s/g,'-').toLowerCase()+"-candidates-cols"} style={{padding: "10px", display: "inline-block", float: "none", borderLeft: "1px solid black"}}>
           <Col md={8}>
             <Card style={{height: "100%", border: "0px"}}>
-              <FormLabel><b>{key}</b></FormLabel>
+              <FormLabel><b>{party.NAME}</b></FormLabel>
               <hr />
               <br />
               {candidatesInputs}
@@ -266,13 +275,39 @@ class Vote extends Component {
   }
 
   checkVote = (vote) => {
-    
+    console.log("Checking votes");
+  }
+
+  convertVoteToObjectFormat = (vote) => {
+    var candidates = [];
+    var parties = [];
+    var above_the_line_array = [];
+    var below_the_line_array = [];
+    for (var candidateID of Object.keys(vote.candidates)) {
+      var candidate = {};
+      var split = candidateID.split("|");
+      candidate.SURNAME = split[0].split(":")[1].toUpperCase();
+      candidate.GIVEN_NAMES = split[1].split(":")[1].toUpperCase();
+      candidate.PARTY = split[2].split(":")[1].toUpperCase().replace(/-/g,' ');
+      candidate.PREFERENCE = vote.candidates[candidateID];
+      candidates.push(candidate);
+    }
+    for (var partyID of Object.keys(vote.parties)) {
+      var party = {};
+      party.NAME = partyID.replace(/-/g,' ').toUpperCase();
+      party.PREFERENCE = vote.parties[partyID];
+      parties.push(party);
+    }
+    console.log(candidates, parties);
   }
 
   handleVoteSubmit = (e) => {
     e.preventDefault();
+    this.checkVote(this.state.vote);
     this.setState({open: true});
     console.log(this.state.vote);
+    // this.convertVoteToObjectFormat(this.state.vote);
+    this.props.history.push("/home");
   }
 
   gotoHome = () => {
