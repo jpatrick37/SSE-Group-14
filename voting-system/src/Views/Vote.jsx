@@ -192,7 +192,9 @@ class Vote extends Component {
     } else {
       vote.parties[id] = value;
     }
-    this.setState({ vote });
+    if (this._isMounted) {
+      this.setState({ vote });
+    }
   }
 
   setupPartiesInput = (parties) => {
@@ -281,43 +283,55 @@ class Vote extends Component {
   }
 
   convertVoteToObjectFormat = (vote) => {
+    var candidateObjs = Object.keys(vote.candidates);
+    var partyObjs = Object.keys(vote.parties);
     var candidates = [];
     var parties = [];
-    var above_the_line = [];
-    var below_the_line = [];
-    for (var candidateID of Object.keys(vote.candidates)) {
+    // Candidates
+    for (var candidateID of candidateObjs) {
       var candidate = {};
       var split = candidateID.split("|");
-      candidate.BALLOT_POSITION = split[0].split(":")[1].toUpperCase();
+      candidate.BALLOT_POSITION = parseInt(split[0].split(":")[1].toUpperCase());
       candidate.SURNAME = split[1].split(":")[1].toUpperCase();
       candidate.GIVEN_NAMES = split[2].split(":")[1].toUpperCase();
       candidate.PARTY = split[3].split(":")[1].toUpperCase().replace(/-/g,' ');
       candidate.PREFERENCE = vote.candidates[candidateID];
-      below_the_line.push(vote.candidates[candidateID]);
       candidates.push(candidate);
     }
-    for (var partyID of Object.keys(vote.parties)) {
+    // Votes
+    for (var partyID of partyObjs) {
       var party = {};
       split = partyID.split("|")
-      party.BALLOT_POSITION = split[0].split(":")[1];
+      party.BALLOT_POSITION = parseInt(split[0].split(":")[1]);
       party.NAME = split[1].split(":")[1].replace(/-/g,' ').toUpperCase();
       party.PREFERENCE = vote.parties[partyID];
-      above_the_line.push(vote.parties[partyID])
       parties.push(party);
     }
-    // console.log(candidates, parties, above_the_line, below_the_line);
-    return {candidates, parties, above_the_line, below_the_line};
+    // Sorting
+    candidates.sort((a, b) => (a.BALLOT_POSITION > b.BALLOT_POSITION) ? 1 : -1);
+    parties.sort((a, b) => (a.BALLOT_POSITION > b.BALLOT_POSITION) ? 1 : -1);
+    // Returning
+    return {candidates, parties};
   }
 
   handleVoteSubmit = (e) => {
     e.preventDefault();
-    this.checkVote(this.state.vote);
-    this.setState({open: true});
-    var vote = this.convertVoteToObjectFormat(this.state.vote);
-    var validated = validate_vote(vote.above_the_line, vote.below_the_line, 6, 12);
-    console.log(validated);
+    // this.setState({open: true});
+    // this.checkVote(this.state.vote);
+    const { vote } = this.state.vote;
     console.log(vote);
-    // firebase.firestore().collection("votes").add({aboveTheLine: vote.above_the_line, belowTheLine: vote.below_the_line});
+    var voteObject = this.convertVoteToObjectFormat(vote);
+    var below_the_line = voteObject.candidates.map( (c) => {
+      console.log(c);
+      return c.PREFERENCE;
+    });
+    var above_the_line = voteObject.parties.map( p => {
+      console.log(p);
+      return p.PREFERENCE;
+    });
+    var validated = validate_vote(above_the_line, below_the_line, 6, 12);
+    console.log(validated, above_the_line.slice().toString(), below_the_line.toString());
+    // firebase.firestore().collection("votes").add({aboveTheLine: above_the_line, belowTheLine: below_the_line});
     // firebase.firestore().collection('users').doc(this.props.user.id).update({ voted: true });
     // this.props.history.push("/home");
   }
@@ -345,7 +359,7 @@ class Vote extends Component {
       }
     }));
     // For snackbar i.e. notifications
-    const { vertical, horizontal, open } = this.state;
+    const { vertical, horizontal, open, parties, candidates } = this.state;
     return (
       <div className="App content">
         <BootstrapContainer style={{padding: "30px"}}>
@@ -373,7 +387,7 @@ class Vote extends Component {
                   <Card style={{border: "none"}}>
                     <Row>
                       <div style={{overflowX: "scroll", whiteSpace: "nowrap", borderRight: "1px solid black"}}>
-                        {this.setupPartiesInput(this.state.parties)}
+                        {this.setupPartiesInput(parties)}
                       </div>
                     </Row>
                   </Card>
@@ -395,7 +409,7 @@ class Vote extends Component {
                  <Card style={{border: "none"}}>
                     <Row>
                       <div style={{overflowX: "scroll", whiteSpace: "nowrap", borderRight: "1px solid black"}}>
-                        {this.setupCandidatesInput(this.state.candidates, this.state.parties)}
+                        {this.setupCandidatesInput(candidates, parties)}
                       </div>
                     </Row>
                   </Card>
