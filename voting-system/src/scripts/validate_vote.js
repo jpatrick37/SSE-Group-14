@@ -12,8 +12,10 @@
  *            1: if the above the line is valid
  *            2: if the below the line is valid
  */
-function validate_vote(above, below, above_threshold, below_threshold)
+function validate_vote(_above, _below, above_threshold, below_threshold)
 {
+    var above = _above.slice();
+    var below = _below.slice();
     var above_valid = true;
     var below_valid = true;
     var above_length = above.length;
@@ -39,7 +41,7 @@ function validate_vote(above, below, above_threshold, below_threshold)
     else
     {
         /* make sure this array goes from at least {1 to below_threshold} */
-        below.sort();
+        below.sort((a, b) => (a > b) ? 1 : -1);
         if(below[0] !== 1)
         {
             below_valid = false;
@@ -79,7 +81,7 @@ function validate_vote(above, below, above_threshold, below_threshold)
     else
     {
         /* make sure this array goes from at least {1 to above_threshold} */
-        above.sort();
+        above.sort((a, b) => (a > b) ? 1 : -1);
         if(above[0] !== 1)
         {
             above_valid = false;

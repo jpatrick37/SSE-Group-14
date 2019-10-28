@@ -7,6 +7,7 @@ import logo from './../assets/images/ausgovlogo.png';
 import ReactLoading from 'react-loading';
 import MUIContainer from '@material-ui/core/Container';
 import validate_vote from '../scripts/validate_vote.js';
+import convert_to_below from '../scripts/convert_to_below.js';
 
 // Snackbar Imports
 import PropTypes from 'prop-types';
@@ -278,10 +279,6 @@ class Vote extends Component {
     return inputs;
   }
 
-  checkVote = (vote) => {
-    console.log("Checking votes");
-  }
-
   convertVoteToObjectFormat = (vote) => {
     var candidateObjs = Object.keys(vote.candidates);
     var partyObjs = Object.keys(vote.parties);
@@ -295,7 +292,11 @@ class Vote extends Component {
       candidate.SURNAME = split[1].split(":")[1].toUpperCase();
       candidate.GIVEN_NAMES = split[2].split(":")[1].toUpperCase();
       candidate.PARTY = split[3].split(":")[1].toUpperCase().replace(/-/g,' ');
-      candidate.PREFERENCE = vote.candidates[candidateID];
+      if (vote.candidates[candidateID] === '-') {
+        candidate.PREFERENCE = 0;
+      } else {
+        candidate.PREFERENCE = parseInt(vote.candidates[candidateID]);
+      }
       candidates.push(candidate);
     }
     // Votes
@@ -304,7 +305,11 @@ class Vote extends Component {
       split = partyID.split("|")
       party.BALLOT_POSITION = parseInt(split[0].split(":")[1]);
       party.NAME = split[1].split(":")[1].replace(/-/g,' ').toUpperCase();
-      party.PREFERENCE = vote.parties[partyID];
+      if (vote.parties[partyID] === '-') {
+        party.PREFERENCE = 0;
+      } else {
+        party.PREFERENCE = parseInt(vote.parties[partyID]);
+      }
       parties.push(party);
     }
     // Sorting
@@ -316,24 +321,26 @@ class Vote extends Component {
 
   handleVoteSubmit = (e) => {
     e.preventDefault();
-    // this.setState({open: true});
-    // this.checkVote(this.state.vote);
-    const { vote } = this.state.vote;
-    console.log(vote);
-    var voteObject = this.convertVoteToObjectFormat(vote);
-    var below_the_line = voteObject.candidates.map( (c) => {
-      console.log(c);
+    var voteObject = this.convertVoteToObjectFormat(this.state.vote);
+
+    var below_the_line = voteObject.candidates.slice().map( (c) => {
       return c.PREFERENCE;
     });
-    var above_the_line = voteObject.parties.map( p => {
-      console.log(p);
+    var above_the_line = voteObject.parties.slice().map( p => {
       return p.PREFERENCE;
     });
     var validated = validate_vote(above_the_line, below_the_line, 6, 12);
-    console.log(validated, above_the_line.slice().toString(), below_the_line.toString());
-    // firebase.firestore().collection("votes").add({aboveTheLine: above_the_line, belowTheLine: below_the_line});
-    // firebase.firestore().collection('users').doc(this.props.user.id).update({ voted: true });
-    // this.props.history.push("/home");
+    if (validated === 1) {
+      firebase.firestore().collection("votes").add({belowTheLine: convert_to_below(voteObject.parties, voteObject.candidates)});
+      firebase.firestore().collection('users').doc(this.props.user.id).update({ voted: true });
+      this.props.history.push("/home");
+    } else if (validated === 2) {
+      firebase.firestore().collection("votes").add({belowTheLine: below_the_line});
+      firebase.firestore().collection('users').doc(this.props.user.id).update({ voted: true });
+      this.props.history.push("/home");
+    } else {
+      this.setState({open: true});
+    }
   }
 
   gotoHome = () => {
@@ -341,6 +348,7 @@ class Vote extends Component {
   }
 
   render() {
+    console.log(this.props.user.voted);
     // If candidates hasn't been fetched yet
     if(this.state.fetchingCandidates){
       return (
@@ -418,7 +426,7 @@ class Vote extends Component {
               <hr />
               <Row>
               {/* disabled={this.props.user.voted} */}
-                <Button type="submit" fullWidth variant="contained" color="primary" className={buttonClasses.button}>Submit Vote</Button>
+                <Button type="submit" fullWidth variant="contained" color="primary" disabled={this.props.user.voted} className={buttonClasses.button}>Submit Vote</Button>
               </Row>
               <Row>
                 <Button fullWidth variant="contained" color="secondary" className={buttonClasses.button} onClick={this.gotoHome}>Back to home</Button>
@@ -440,7 +448,7 @@ class Vote extends Component {
           <MySnackbarContentWrapper
             onClose={() => this.setState({open: false})}
             variant="error"
-            message="Invalid vote"
+            message="Invalid vote! Please review your vote!"
           />
         </Snackbar>
       </div>
