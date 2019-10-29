@@ -9,7 +9,7 @@ import LoadingSymbol from './../LoadingSymbol'
 import { getElectionTime, convertStringToDate } from '../../Functions/ElectionDetails'
 import { calculateElectedSenators } from '../../Functions/ClaculateResults'
 import { getCandidates } from '../../Functions/GetCandidates'
-
+import { uploadResult } from '../../Functions/UploadResults'
 
 // calculates the results of the election
 class CalculateResults extends Component {
@@ -40,8 +40,14 @@ class CalculateResults extends Component {
     })
     
     getVotes().then(result =>{
+      let votes = result['message']
+      let voteArray = []
+      for (var i = 0; i < votes.length; i++){
+        voteArray.push(votes[i].belowTheLine)
+      }
+      console.log(voteArray)
       this.setState({
-        votes: result['message'],
+        votes: voteArray,
         fetchingVotes: false
       })
     })
@@ -52,11 +58,19 @@ class CalculateResults extends Component {
       // sort in ballot position order
       candidates = candidates.sort((a,b) => (parseInt(a.BALLOT_POSITION) > parseInt(b.BALLOT_POSITION)) ? 1 : ((parseInt(b.BALLOT_POSITION) > parseInt(a.BALLOT_POSITION)) ? -1 : 0)); 
       
+      // adding fields for claculate function
+      candidates.map(candidate =>{
+        candidate.total_votes = 0
+        candidate.elected = false
+        candidate.excluded = false
+        candidate.first_pref_votes = []
+      })
+
       this.setState({
         candidates,
         fetchingCandidates: false
       })
-    })
+    })    
   }
 
   // opens the prompt for editting
@@ -85,10 +99,12 @@ class CalculateResults extends Component {
       if(this.isCurrenttimeAfter(convertStringToDate(this.state.endTime))){
         // voting counting starting
         this.setState({calculateResults: true, warningOpen: false})
-        let numberOfSentors = 2
-        let results = calculateElectedSenators(numberOfSentors, this.state.candidates, this.state.votes)
+        let numberOfSentors = 12
+        console.log(numberOfSentors)
+
+        let results = calculateElectedSenators(numberOfSentors+1, this.state.candidates, this.state.votes)
         console.log(results)
-        
+
         // if voting had an error
         if(results === -1){
           // error
@@ -97,11 +113,11 @@ class CalculateResults extends Component {
           return
         }
 
-        console.log(results)
         //vote counting ended
         this.setState({calculateResults: false})
 
         // upload result
+        uploadResult(results)
 
 
       }
