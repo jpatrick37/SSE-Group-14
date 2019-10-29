@@ -19,9 +19,9 @@ class Results extends Component {
         <Grid style={{marginLeft: "10px"}} columns={1} >
           <Grid.Row>
             <Grid.Column>
-              <IoIosBrowsers color='red' size="10em"/>
+              <IoIosBrowsers size="10em"/>
               <br/>
-              <Button color='red' onClick={this.goToResultsCalculation} >Calculate Results</Button> 
+              <Button onClick={this.goToResultsCalculation} >Calculate Results</Button> 
             </Grid.Column>
           </Grid.Row>
         </Grid>

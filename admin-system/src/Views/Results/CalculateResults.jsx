@@ -2,9 +2,13 @@ import React, { Component } from 'react';
 import NavBar from '../NavBar.jsx';
 import { Header, Button, Modal, Icon } from 'semantic-ui-react'
 import { IoLogoBuffer, IoMdSad } from 'react-icons/io'
-import LoadingBar from 'react-top-loading-bar'
-import { getElectionTime, convertStringToDate } from '../../Functions/ElectionDetails'
+import { getVotes } from '../../Functions/GetVotes'
 import LoadingSymbol from './../LoadingSymbol'
+
+// helper functions
+import { getElectionTime, convertStringToDate } from '../../Functions/ElectionDetails'
+import { calculateElectedSenators } from '../../Functions/ClaculateResults'
+import { getCandidates } from '../../Functions/GetCandidates'
 
 
 // calculates the results of the election
@@ -12,11 +16,15 @@ class CalculateResults extends Component {
   constructor(props) {
     super(props);
     this.state = {
-        loadingBarProgress: 50,
         startTime: "",
         endTime: "",
         fetchingTime: true,
         warningOpen: false,
+        fetchingVotes: true, 
+        fetchingCandidates: true,
+        calculatingResults: false,
+        votes: null,
+        candidates: null
     };
   }
 
@@ -30,11 +38,25 @@ class CalculateResults extends Component {
         fetchingTime: false
       })
     })
-  }
+    
+    getVotes().then(result =>{
+      this.setState({
+        votes: result['message'],
+        fetchingVotes: false
+      })
+    })
 
-  // when the load br is finished set it back to zero
-  onLoaderFinished = () => {
-    this.setState({ loadingBarProgress: 0 })
+    getCandidates().then(result =>{
+      let candidates = result['message']
+
+      // sort in ballot position order
+      candidates = candidates.sort((a,b) => (parseInt(a.BALLOT_POSITION) > parseInt(b.BALLOT_POSITION)) ? 1 : ((parseInt(b.BALLOT_POSITION) > parseInt(a.BALLOT_POSITION)) ? -1 : 0)); 
+      
+      this.setState({
+        candidates,
+        fetchingCandidates: false
+      })
+    })
   }
 
   // opens the prompt for editting
@@ -61,7 +83,27 @@ class CalculateResults extends Component {
     if(value){
       // if the election is over
       if(this.isCurrenttimeAfter(convertStringToDate(this.state.endTime))){
-        console.log("can count")
+        // voting counting starting
+        this.setState({calculateResults: true, warningOpen: false})
+        let numberOfSentors = 2
+        let results = calculateElectedSenators(numberOfSentors, this.state.candidates, this.state.votes)
+        console.log(results)
+        
+        // if voting had an error
+        if(results === -1){
+          // error
+          console.log('error')
+          this.setState({calculateResults: false})
+          return
+        }
+
+        console.log(results)
+        //vote counting ended
+        this.setState({calculateResults: false})
+
+        // upload result
+
+
       }
       else{
         console.log("can't count")
@@ -75,9 +117,11 @@ class CalculateResults extends Component {
 
   render() {
     // if havn't fetched time display loading bar
-    if(this.state.fetchingTime){
+    if(this.state.fetchingTime && this.state.fetchingVotes && this.state.fetchingCandidates){
       return <LoadingSymbol {...this.props} activeItem='results' />
     }
+
+    // print election not over yet if the elction date hasn't finished
     if (!this.isCurrenttimeAfter(convertStringToDate(this.state.endTime))){
       return(
         <div style= {{width: "100%"}}>
@@ -87,17 +131,19 @@ class CalculateResults extends Component {
         </div>
       )
     }
+    // if claculating the results
+    if(this.state.calculatingResults){
+      return(
+        <Header size='big' >Calculating Results</Header>,
+        <LoadingSymbol {...this.props} activeItem='results' />
+      )
+    }
+
     return (
       <div style= {{width: "100%"}}>
         <NavBar {...this.props} activeItem='results' />
-        <IoLogoBuffer size="10em"/> <br />
-        <Button color='red' onClick={this.openWarningMessage}>Claculate Results</Button>
-        <LoadingBar
-          progress={this.state.loadingBarProgress}
-          height={3}
-          color="rgb(0,191, 255)"
-          onLoaderFinished={() => this.onLoaderFinished()}
-        />
+        <IoLogoBuffer color='red' size="10em"/> <br />
+        <Button color='red' onClick={this.openWarningMessage}>Initiate the Counting</Button>
 
         {/* warning pop up shown if they want to claculate results */}
         <Modal open={this.state.warningOpen}  basic size='small'>
