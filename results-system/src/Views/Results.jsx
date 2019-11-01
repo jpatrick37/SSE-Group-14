@@ -36,7 +36,7 @@ class Results extends Component {
 
 	console.log(candidates)
 	console.log(voteCounts)
-	this.setState({candidates, voteCounts})
+	// this.setState({candidates, voteCounts})
   }
   
   componentDidMount() {
