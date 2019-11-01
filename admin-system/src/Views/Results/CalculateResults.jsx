@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import NavBar from '../NavBar.jsx';
-import { Header, Button, Modal, Icon } from 'semantic-ui-react'
+import { Header, Button, Modal, Icon, Message } from 'semantic-ui-react'
 import { IoLogoBuffer, IoMdSad } from 'react-icons/io'
 import { getVotes } from '../../Functions/GetVotes'
 import LoadingSymbol from './../LoadingSymbol'
@@ -24,7 +24,8 @@ class CalculateResults extends Component {
         fetchingCandidates: true,
         calculatingResults: false,
         votes: null,
-        candidates: null
+        candidates: null,
+        submitted: false,
     };
   }
 
@@ -119,17 +120,20 @@ class CalculateResults extends Component {
         // upload result
         uploadResult(results)
 
+        this.setState({submitted: true})
+
 
       }
       else{
         console.log("can't count")
       }
-      this.setState({warningOpen: false, loadingBarProgress: 100})
+      this.setState({warningOpen: false})
     }
     else{
       this.setState({warningOpen: false})
     }
   }
+
 
   render() {
     // if havn't fetched time display loading bar
@@ -158,6 +162,15 @@ class CalculateResults extends Component {
     return (
       <div style= {{width: "100%"}}>
         <NavBar {...this.props} activeItem='results' />
+
+        {/* message displays only if they submit an item to the database */}
+        <Message hidden={!this.state.submitted} positive>
+            <Message.Header >Submitted</Message.Header>
+              <p>Voting Result Submitted</p>
+          </Message>
+          <br /><br />
+
+
         <IoLogoBuffer color='red' size="10em"/> <br />
         <Button color='red' onClick={this.openWarningMessage}>Initiate the Counting</Button>
 
