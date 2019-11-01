@@ -1,29 +1,49 @@
 import React, { Component } from 'react';
 import PieChart from 'react-minimal-pie-chart';
-import { Container, Row, Col, FormGroup, FormLabel, FormControl, Button } from 'react-bootstrap';
-import { firebase } from '../Firebase.jsx';
+import { Container, Row, Col } from 'react-bootstrap';
+
+import { getResults } from '../Functions/getResults'
+
 
 class Results extends Component {
-  _isMounted = false;
   constructor(props) {
     super(props);
-	// Hardcode for now
 	this.state = {
 		parties: {'Pool': 'steve', 'Fire': 'litty', 'Savage': 'jeff'},
 		candidates: ['steve', 'litty', 'jeff'],
 		voteCounts: {'steve': 200, 'litty': 300, 'jeff': 260},
 	};
-    // this.state = {
-      // parties: {},	
-      // candidates: [],
-      // voteCounts: {},
-    // };
-    // this.resultsRef = firebase.firestore().collection('results');
+  }
+
+  convertResultsObjectToState(resultsObject){
+	// console.log(resultsObject)
+
+	// let parties = {}
+	// resultsObject.map(candidate => {
+
+	// })
+
+	let candidates = resultsObject.map(candidate =>{
+		let name = candidate.GIVEN_NAMES + " " + candidate.SURNAME
+		return name
+	})
+
+	let voteCounts = resultsObject.map(candidate => {
+		let key = candidate.GIVEN_NAMES + " " + candidate.SURNAME
+		let voteCount = {[key]: candidate.first_pref_votes.length}
+		return voteCount
+	})
+
+	console.log(candidates)
+	console.log(voteCounts)
+	this.setState({candidates, voteCounts})
   }
   
   componentDidMount() {
-    this._isMounted = true;
-    // this.unsubscribe = this.candidatesRef.onSnapshot(this.onCandidatesCollectionUpdate);
+	getResults().then(result =>{
+		let resultObject = JSON.parse(result.message)
+		this.convertResultsObjectToState(resultObject)
+	  })
   }
 
   componentWillUnmount() {
