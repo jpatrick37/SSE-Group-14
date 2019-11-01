@@ -1,15 +1,13 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Route, Redirect, Switch } from "react-router-dom";
 import { Container, Row } from "react-bootstrap";
-
+import MUIContainer from '@material-ui/core/Container';
 import './App.css';
 import Login from './Views/Login';
 import Home from './Views/Home';
 import RouteObjects from './routes.js';
-
-import { firebase } from './Firebase';
-
 import ReactLoading from 'react-loading';
+import { firebase } from './Firebase.jsx';
 
 class App extends Component {
   _isMounted = false;
