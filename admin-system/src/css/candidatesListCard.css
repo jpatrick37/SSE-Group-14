@@ -1,0 +1,10 @@
+.ui.card>.content,
+.ui.cards>.card>.content {
+  background-color: rgba(189, 189, 189, 0.151);
+}
+
+
+.ui.card>.content.extra,
+.ui.cards>.card>.content.extra {
+  background-color: rgb(226, 226, 226);
+}
