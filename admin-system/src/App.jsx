@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Route, Redirect, Switch } from "react-router-d
 import { Container, Row } from "react-bootstrap";
 import MUIContainer from '@material-ui/core/Container';
 import './App.css';
-import Login from './Views/Login.jsx';
-import Home from './Views/Home.jsx';
+import Login from './Views/Login';
+import Home from './Views/Home';
 import RouteObjects from './routes.js';
 import ReactLoading from 'react-loading';
 import { firebase } from './Firebase.jsx';
@@ -15,6 +15,7 @@ class App extends Component {
     super(props);
     this.state = ({
       user: null,
+      userDetails: null,
       fetchingUser: true
     });
     this.authListener = this.authListener.bind(this);
@@ -39,9 +40,8 @@ class App extends Component {
           if (!doc.exists) {
             this.setState({ user: null, fetchingUser: false });
           } else {
-            var theUser = doc.data();
-            theUser.id = doc.id;
-            this.setState({ user: theUser, fetchingUser: false });
+            console.log(doc.data());
+            this.setState({ user: doc.data(), userDetails: user, fetchingUser: false });
           }
         })
         .catch(err => {
@@ -49,6 +49,7 @@ class App extends Component {
         })
       }
       else {
+        console.log("Error getting user")
         this.setState({ user: null, fetchingUser: false });
       }
     });
@@ -59,7 +60,7 @@ class App extends Component {
       return (
         <Route
           path={route.path}
-          render={props => (<route.component {...props} user={this.state.user}/>)}
+          render={props => (<route.component user={this.state.user} userDetails={this.state.userDetails} {...props}/>)}
           key={key}
         />
       );
@@ -67,17 +68,9 @@ class App extends Component {
   };
 
   render() {
-    // If user hasn't been fetched yet
+    // if havn't fetch user display loading bar
     if(this.state.fetchingUser){
-      return (
-        <div className="App container">
-          <MUIContainer component="main" maxWidth="xs">
-            <Container fluid >
-              <ReactLoading type="bubbles" color="blue" height={667} width={375} />
-            </Container>
-          </MUIContainer>
-        </div>
-      )
+      return <ReactLoading type="bubbles" color="blue" height={667} width={375} />
     }
     // Router logic
     var renderPath = "";
@@ -106,7 +99,7 @@ class App extends Component {
             <Router>
               <Switch>
                 { this.state.user && this.getRoutes(RouteObjects) }
-                <Route path={renderPath} render={props => <RenderPage {...props} user={this.state.user} />} />
+                <Route path={renderPath} render={props => <RenderPage user={this.state.user} userDetails={this.state.userDetails} {...props} />} />
                 <Redirect from="/" to={redirectPath} />
               </Switch>
             </Router>
