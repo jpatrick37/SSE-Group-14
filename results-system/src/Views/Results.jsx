@@ -1,168 +1,156 @@
 import React, { Component } from 'react';
-import PieChart from 'react-minimal-pie-chart';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Row, Col, FormGroup, FormLabel, FormControl, Container as BootstrapContainer, Card, Image } from 'react-bootstrap';
 
 import { getResults } from '../Functions/getResults'
+import logo from '../assets/images/ausgovlogo.png'
 
+import ReactLoading from 'react-loading';
+
+const numberingStyle = {
+		color: "white",
+		fontSize: "1.5rem",
+		fontWeight: "bold",
+		// position: "absolute",
+		top: "0",
+		width: "75px",
+		background: "black",
+		//borderRadius: "50%",
+		textAlign: "center",
+		boxShadow: "1px 1px 0 #999",
+		float: "left",
+};
 
 class Results extends Component {
   constructor(props) {
     super(props);
 	this.state = {
-		parties: {'Pool': 'steve', 'Fire': 'litty', 'Savage': 'jeff'},
-		candidates: ['steve', 'litty', 'jeff'],
-		voteCounts: {'steve': 200, 'litty': 300, 'jeff': 260},
-	};
-  }
-
-  convertResultsObjectToState(resultsObject){
-	// console.log(resultsObject)
-
-	// let parties = {}
-	// resultsObject.map(candidate => {
-
-	// })
-
-	let candidates = resultsObject.map(candidate =>{
-		let name = candidate.GIVEN_NAMES + " " + candidate.SURNAME
-		return name
-	})
-
-	let voteCounts = resultsObject.map(candidate => {
-		let key = candidate.GIVEN_NAMES + " " + candidate.SURNAME
-		let voteCount = {[key]: candidate.first_pref_votes.length}
-		return voteCount
-	})
-
-	console.log(candidates)
-	console.log(voteCounts)
-	// this.setState({candidates, voteCounts})
+		elected_candidates: [],
+		number_of_votes: 0,
+		loading: true
+	}
   }
   
   componentDidMount() {
 	getResults().then(result =>{
 		let resultObject = JSON.parse(result.message)
-		this.convertResultsObjectToState(resultObject)
+		console.log(resultObject)
+		let number_of_votes = 0
+		let elected_candidates = resultObject.map(candidate => {
+			number_of_votes += candidate.first_pref_votes.length
+			return {
+				total_votes: candidate.first_pref_votes.length,
+				name: candidate.GIVEN_NAMES + " " + candidate.SURNAME,
+				party: candidate.PARTY
+			}
+		})
+		this.setState({elected_candidates, number_of_votes, loading: false})
 	  })
   }
 
-  componentWillUnmount() {
-    this._isMounted = false;
-  }
-
-  
-  setupPartiesOutput = (parties, candidates, voteCounts) => {
+  printElectedCandidates = (elected_candidates, all_votes) => {
+	// Set significant figures
 	function precise(x) {
 	  return Number.parseFloat(x).toPrecision(3);
 	}
-    var outputs = Object.keys(parties).map(function (key) {
-	  // Iterate through parties
-	  for (var i=0; i<Object.keys(parties).length; i++) {
-		  // Create a unique key for each party
-	      var uniqueKey = key.replace(/\s/g,'-').toLowerCase();
-	  }
-	  // Calculate total votes and totals for each party
-	  var voteTotal = 0;
-	  var partyTotal = 0;
-	  var candidateResults = [];
-	  for (var i = 0; i<candidates.length; i++){
-		  voteTotal += voteCounts[candidates[i]];
-		  if (candidates[i] == parties[key]){
-			  partyTotal += voteCounts[candidates[i]];
-			  candidateResults.push(
-				  <Col>
-					  <h5>{candidates[i]+": "+voteCounts[candidates[i]]}</h5>
-				  </Col>
-				);
-	      }
-	  }
-	  candidateResults.push(
-		  <Col>
-			  <h5>{"Total: "+partyTotal}</h5>
-		  </Col>
+	
+	// All hardcoded variables for now
+	var elected_candidates = [];
+	elected_candidates.push({total_votes: 2,
+						 elected: false,
+						 excluded: false,
+						 first_pref_votes: [],
+						 name: "Jon",
+						 party: "Pool Party"});
+	elected_candidates.push({total_votes: 3,
+						 elected: false,
+						 excluded: false,
+						 first_pref_votes: [],
+						 name: "Ana",
+						 party: "Disco Party"});
+	elected_candidates.push({total_votes: 6,
+						 elected: false,
+						 excluded: false,
+						 first_pref_votes: [],
+						 name: "Bob",
+						 party: "Pool Party"});
+	elected_candidates.push({total_votes: 6,
+						 elected: false,
+						 excluded: false,
+						 first_pref_votes: [],
+						 name: "Tim",
+						 party: "Single Party"});
+	elected_candidates.push({total_votes: 5,
+						 elected: false,
+						 excluded: false,
+						 first_pref_votes: [],
+						 name: "Kat",
+						 party: "Pool Party"});
+	elected_candidates.push({total_votes: 4,
+						 elected: false,
+						 excluded: false,
+						 first_pref_votes: [],
+						 name: "Jen",
+						 party: "Disco Party"});
+	
+	var output = [];
+	// Convert objects into a sortable array
+	var sortedCandidates = [];
+	for (var i = 0; i < elected_candidates.length; i++) {
+		sortedCandidates.push([elected_candidates[i].name, elected_candidates[i].party, elected_candidates[i].total_votes]);
+	}
+	// Sort elected candidates by vote count
+	sortedCandidates.sort(function(a, b) {
+		return b[2] - a[2];
+	});
+	
+	for (var i = 0; i < elected_candidates.length; i++) {
+		output.push(
+			<Row>
+				<Col>
+					<h5 style={numberingStyle}>{i+1}</h5>
+				</Col>
+				<Col>
+					<h5>{sortedCandidates[i][0]}<br/>{sortedCandidates[i][1].toUpperCase()}</h5>
+				</Col>
+				<Col>
+					<h5>{precise(100*sortedCandidates[i][2]/all_votes)}%</h5>
+				</Col>
+
+			</Row>
 		);
-      return (
-	    <Container key={uniqueKey+"-resultgroup"}>
-		  <Row>
-			  <Col>
-				<h3>{key+" Party"}</h3>
-			  </Col>
-			  <Col>
-				<h3>{"Result: "+precise(100*partyTotal/voteTotal)+"%"}</h3>
-			  </Col>
-		  </Row>
-		  <Row>
-		    <Col>
-		      <h5>Candidate Votes</h5>
-			</Col>
-			{candidateResults}
-		  </Row>
-		  <Row>
-			<p></p>
-		  </Row>
-		  <hr />
-		</Container>
-      );
-    });
-    return outputs;
-  }
+		output.push(<hr />);
+		// Record Data for pie chart
+	}
 	
-  setupPieChart = (parties, candidates, voteCounts) => {
-	function   generateRandomColor() {
-		let r = Math.round((Math.random() * 255)); //red 0 to 255
-		let g = Math.round((Math.random() * 255)); //green 0 to 255
-		let b = Math.round((Math.random() * 255)); //blue 0 to 255
-		return 'rgb(' + r + ', ' + g + ', ' + b + ')';
-    };
-    var partyChart = [];
-	var labels = [];
-	var outputs = Object.keys(parties).map(function (key) {
-	  // Calculate total votes and totals for each party
-	  var voteTotal = 0;
-	  var partyTotal = 0;
-	  for (var i = 0; i<candidates.length; i++){
-		  voteTotal += voteCounts[candidates[i]];
-		  if (candidates[i] == parties[key]){
-			  partyTotal += voteCounts[candidates[i]];
-	      }
-	  }
-	  var partyColour = generateRandomColor();
-	  labels.push(<p style={{color:partyColour}}>{key}</p>);
-	  partyChart.push({ title: key, value: partyTotal, color: partyColour});
-    });
-	
+
     return (
-		<Container>
-		  <Col>
-			<PieChart
-				data={partyChart}
-				label={props => { return props.data[props.dataIndex].title;}}
-			/>
-		  </Col>
-		  <Col>
-		    {labels}
-		  </Col>
-		</Container>
+		<div>
+			{output}
+		</div>
 	);
   }
-  
+ 
   render() {
-	
+	if(this.state.loading){
+		return <ReactLoading type="bubbles" color="blue" height={667} width={375} />
+	}
     // console.log(this.state.candidates, this.state.parties, this.state.vote);
     return (
-      <div className="App">
-        <Container fluid>
-          <Row>
-              <h1>Results</h1>
-              <hr />
-          </Row>
-          {this.setupPartiesOutput(this.state.parties, this.state.candidates, this.state.voteCounts)}
-		  <Row>
-		    <h2>Statistics</h2>
-			{this.setupPieChart(this.state.parties, this.state.candidates, this.state.voteCounts)}
-		  </Row>
-        </Container>
-      </div>
+		<div className="App content">
+			<BootstrapContainer style={{padding: "30px"}}>
+				<Row>
+					<Image src={logo} style={{maxHeight: "50px", float: "left", paddingRight: "30px"}}/>
+					<h5 style={{textAlign: "justify", float: "right"}}> Senate Ballot Paper<br/><b>State</b> - Election of Senators</h5>
+				</Row>
+				<hr />
+				<Row>
+					<h2 style={{textAlign: "justify", float: "left"}}>Elected Candidates</h2>
+				</Row>
+				<hr />
+				{this.printElectedCandidates(this.elected_candidates, this.state.number_of_votes)}
+			</BootstrapContainer>
+			
+		</div>
     );
   }
 }
