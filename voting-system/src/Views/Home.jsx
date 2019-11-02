@@ -4,6 +4,14 @@ import Container from '@material-ui/core/Container';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 
+console.logCopy = console.log.bind(console);
+
+console.log = function(data)
+{
+    var currentDate = '[' + new Date().toUTCString() + '] ';
+    this.logCopy(currentDate, data);
+};
+
 class Home extends Component {
   _isMounted = false;
   constructor(props) {
@@ -15,6 +23,10 @@ class Home extends Component {
 
   logout = () => {
     firebase.auth().signOut();
+    //logging action
+    var logMessage  = "User has logged out";
+    console.log(logMessage + "  [userId: " + firebase.auth().currentUser.uid + ']' );
+    firebase.firestore().collection("logs").add({message: logMessage, uid: firebase.auth().currentUser.uid, time: new Date()});
   }
 
   componentDidMount() {

@@ -80,6 +80,11 @@ class ElectionDate extends Component {
     // submit object to the 'table'
     timeDetailsRef.set(object).then(doc => {
       console.log("Document uploaded")
+      //logging actions
+      var logMessage  = "Admin has updated election time";
+      console.log(logMessage + " [userId: " + this.props.user.id + ']' );
+      firebase.firestore().collection("logs").add({message: logMessage, uid: this.props.user.id, time: new Date()});
+      
       this.setState({submitted: true, disabled: true})
     }).catch(function(error) {
       console.log("Error writing document", error)

@@ -12,7 +12,12 @@ class NavBar extends Component {
 
   // logouts of firebase
   logout = () => {
+    var adminId = firebase.auth().currentUser.uid;
     firebase.auth().signOut();
+    //logging action
+    var logMessage  = "Admin has logged out";
+    console.log(logMessage + "  [userId: " + adminId + ']' );
+    firebase.firestore().collection("logs").add({message: logMessage, uid: adminId, time: new Date()});
   }
 
   // goes to the candiates page
