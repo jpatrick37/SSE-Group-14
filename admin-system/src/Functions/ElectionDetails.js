@@ -36,6 +36,9 @@ export async function getElectionTime(){
 
 // converts a javascript date to a string of format dd-mm-yyy HH:MM
 function convertDateToString(date) {
+    if (!date){
+        return ""
+    }
     let dateString = ""
     dateString += date.getDate()
     dateString += "-" + (date.getMonth() + 1) 
@@ -47,6 +50,9 @@ function convertDateToString(date) {
 
 // converts a string with format dd-mm-yyy HH:MM into a date object
 export function convertStringToDate(input){
+    if (input == ""){
+        return new Date()
+    }
     let splitArr = input.split("-").map(item => item.trim());
     let day = splitArr[0]
     let month = splitArr[1]
