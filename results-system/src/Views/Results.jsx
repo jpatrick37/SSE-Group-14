@@ -1,3 +1,11 @@
+// Written by Roland Croft
+// No input required. (But requires votes to have been submitted in the voting system)
+// Output is list of elected candidates. Each candidate details:
+// Position in order of votes. 
+// Name. 
+// Affiliated Party. 
+// Percentage of obtained votes. 
+
 import React, { Component } from 'react';
 import { Row, Col, FormGroup, FormLabel, FormControl, Container as BootstrapContainer, Card, Image } from 'react-bootstrap';
 
@@ -10,11 +18,9 @@ const numberingStyle = {
 		color: "white",
 		fontSize: "1.5rem",
 		fontWeight: "bold",
-		// position: "absolute",
 		top: "0",
 		width: "75px",
 		background: "black",
-		//borderRadius: "50%",
 		textAlign: "center",
 		boxShadow: "1px 1px 0 #999",
 		float: "left",
@@ -23,6 +29,7 @@ const numberingStyle = {
 class Results extends Component {
   constructor(props) {
     super(props);
+	// State attributes
 	this.state = {
 		elected_candidates: [],
 		number_of_votes: 0,
@@ -30,14 +37,18 @@ class Results extends Component {
 	}
   }
   
+  // On Mount, read attributes from the database
   componentDidMount() {
 	getResults().then(result =>{
 		let resultObject = JSON.parse(result.message)
 		console.log(resultObject)
 		let number_of_votes = 0
+		// Get elected candidates
 		let elected_candidates = resultObject.map(candidate => {
+			// Record total number of votes
 			number_of_votes += candidate.first_pref_votes.length
 			return {
+				// Record attributes of each elected candidate
 				total_votes: candidate.first_pref_votes.length,
 				name: candidate.GIVEN_NAMES + " " + candidate.SURNAME,
 				party: candidate.PARTY
@@ -53,45 +64,6 @@ class Results extends Component {
 	  return Number.parseFloat(x).toPrecision(3);
 	}
 	
-	// All hardcoded variables for now
-	var elected_candidates = [];
-	elected_candidates.push({total_votes: 2,
-						 elected: false,
-						 excluded: false,
-						 first_pref_votes: [],
-						 name: "Jon",
-						 party: "Pool Party"});
-	elected_candidates.push({total_votes: 3,
-						 elected: false,
-						 excluded: false,
-						 first_pref_votes: [],
-						 name: "Ana",
-						 party: "Disco Party"});
-	elected_candidates.push({total_votes: 6,
-						 elected: false,
-						 excluded: false,
-						 first_pref_votes: [],
-						 name: "Bob",
-						 party: "Pool Party"});
-	elected_candidates.push({total_votes: 6,
-						 elected: false,
-						 excluded: false,
-						 first_pref_votes: [],
-						 name: "Tim",
-						 party: "Single Party"});
-	elected_candidates.push({total_votes: 5,
-						 elected: false,
-						 excluded: false,
-						 first_pref_votes: [],
-						 name: "Kat",
-						 party: "Pool Party"});
-	elected_candidates.push({total_votes: 4,
-						 elected: false,
-						 excluded: false,
-						 first_pref_votes: [],
-						 name: "Jen",
-						 party: "Disco Party"});
-	
 	var output = [];
 	// Convert objects into a sortable array
 	var sortedCandidates = [];
@@ -103,6 +75,7 @@ class Results extends Component {
 		return b[2] - a[2];
 	});
 	
+	// Output candidate details
 	for (var i = 0; i < elected_candidates.length; i++) {
 		output.push(
 			<Row>
@@ -119,10 +92,8 @@ class Results extends Component {
 			</Row>
 		);
 		output.push(<hr />);
-		// Record Data for pie chart
 	}
 	
-
     return (
 		<div>
 			{output}
@@ -134,7 +105,6 @@ class Results extends Component {
 	if(this.state.loading){
 		return <ReactLoading type="bubbles" color="blue" height={667} width={375} />
 	}
-    // console.log(this.state.candidates, this.state.parties, this.state.vote);
     return (
 		<div className="App content">
 			<BootstrapContainer style={{padding: "30px"}}>
@@ -147,7 +117,7 @@ class Results extends Component {
 					<h2 style={{textAlign: "justify", float: "left"}}>Elected Candidates</h2>
 				</Row>
 				<hr />
-				{this.printElectedCandidates(this.elected_candidates, this.state.number_of_votes)}
+				{this.printElectedCandidates(this.state.elected_candidates, this.state.number_of_votes)}
 			</BootstrapContainer>
 			
 		</div>
