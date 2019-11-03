@@ -18,6 +18,6 @@ Eg. Run: **cd admin-system** or **cd voting-system** or **cd results-system**
   a. A browser window will open (if not, access it through your browser at [http://localhost:3000](http://localhost:3000/)) at the admin login page, you can login using:\
     &nbsp;&nbsp;&nbsp;&nbsp;i. Email: [admin@admin.com](mailto:admin@admin.com)\
     &nbsp;&nbsp;&nbsp;&nbsp;ii. Password: admin123\
-  b. For voting system, use
+  b. For voting system, use:\
     &nbsp;&nbsp;&nbsp;&nbsp;i. Email: [test@test.com](mailto:test@test.com)\
     &nbsp;&nbsp;&nbsp;&nbsp;ii. Password: test123
