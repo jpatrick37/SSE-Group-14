@@ -1,5 +1,6 @@
 // Written by Roland Croft
-// No input required. (But requires votes to have been submitted in the voting system)
+// Instructions to run are located in readme of main folder. 
+// No input required. (But requires votes to have been submitted in the voting system. See voting-system for details.)
 // Output is list of elected candidates. Each candidate details:
 // Position in order of votes. 
 // Name. 
