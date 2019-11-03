@@ -40,8 +40,9 @@ class App extends Component {
           if (!doc.exists) {
             this.setState({ user: null, fetchingUser: false });
           } else {
-            console.log(doc.data());
-            this.setState({ user: doc.data(), userDetails: user, fetchingUser: false });
+            var theUser = doc.data();
+            theUser.id = user.uid;
+            this.setState({ user: theUser, userDetails: user, fetchingUser: false });
           }
         })
         .catch(err => {
@@ -49,7 +50,6 @@ class App extends Component {
         })
       }
       else {
-        console.log("Error getting user")
         this.setState({ user: null, fetchingUser: false });
       }
     });

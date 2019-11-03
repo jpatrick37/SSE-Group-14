@@ -333,6 +333,11 @@ class Vote extends Component {
     if (validated === 1) {
       firebase.firestore().collection("votes").add({belowTheLine: convert_to_below(voteObject.parties, voteObject.candidates)});
       firebase.firestore().collection('users').doc(this.props.user.id).update({ voted: true });
+      //logging action
+      var logMessage  = "User has submitted vote";
+      console.log(logMessage + "  [userId: " + firebase.auth().currentUser.uid + ']' );
+      firebase.firestore().collection("logs").add({message: logMessage, uid: firebase.auth().currentUser.uid, time: new Date()});
+      
       this.props.history.push("/home");
     } else if (validated === 2) {
       firebase.firestore().collection("votes").add({belowTheLine: below_the_line});
@@ -348,7 +353,7 @@ class Vote extends Component {
   }
 
   render() {
-    console.log(this.props.user.voted);
+    //console.log(this.props.user.voted);
     // If candidates hasn't been fetched yet
     if(this.state.fetchingCandidates){
       return (

@@ -132,6 +132,10 @@ class UploadCandidates extends Component {
       message: "Sucessfully uploaded CSV file to Firebase!",
       variant: "success",
     });
+    //logging actions
+    var logMessage  = "Admin has uploaded CSV file to Firebase";
+    console.log(logMessage + "  [userId: " + this.props.user.id + ']' );
+    firebase.firestore().collection("logs").add({message: logMessage, uid: this.props.user.id, time: new Date()});
   }
   
   render() {

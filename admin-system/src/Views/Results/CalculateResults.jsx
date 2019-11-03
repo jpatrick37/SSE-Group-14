@@ -4,6 +4,7 @@ import { Header, Button, Modal, Icon, Message } from 'semantic-ui-react'
 import { IoLogoBuffer, IoMdSad } from 'react-icons/io'
 import { getVotes } from '../../Functions/GetVotes'
 import LoadingSymbol from './../LoadingSymbol'
+import { firebase } from '../../Firebase.jsx'
 
 // helper functions
 import { getElectionTime, convertStringToDate } from '../../Functions/ElectionDetails'
@@ -121,7 +122,10 @@ class CalculateResults extends Component {
         uploadResult(results)
 
         this.setState({submitted: true})
-
+        //logging actions
+        var logMessage  = "Admin has calculated election results";
+        console.log(logMessage + "  [userId: " + this.props.user.id + ']' );
+        firebase.firestore().collection("logs").add({message: logMessage, uid: this.props.user.id, time: new Date()});
 
       }
       else{

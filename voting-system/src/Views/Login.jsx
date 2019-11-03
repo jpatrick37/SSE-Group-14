@@ -112,6 +112,9 @@ class Login extends Component {
     firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password)
     .then(firebaseUser => {
       console.log("Signed in!");
+      var logMessage  = "User has logged in";
+      console.log(logMessage + "  [userId: " + firebase.auth().currentUser.uid + ']' );
+      firebase.firestore().collection("logs").add({message: logMessage, uid: firebase.auth().currentUser.uid, time: new Date()});
     })
     .catch(error => {
       console.log("Didn't sign in!");
